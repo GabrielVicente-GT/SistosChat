@@ -1,7 +1,13 @@
 # SistosChat
 
-g++ server.cpp chat.pb.cc -pthread -lprotobuf -o server
+protoc --c_out=. chat.proto
 
-g++ client.cpp chat.pb.cc -pthread -lprotobuf -o client
 
-protoc chat.proto --cpp_out=.
+gcc -o servidor servidor.c chat.pb-c.c -pthread -lprotobuf-c
+
+./servidor 8080
+
+
+gcc -o cliente cliente.c chat.pb-c.c -lprotobuf-c
+
+./cliente 127.0.0.1 8080 usuario1
