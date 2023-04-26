@@ -1,0 +1,23 @@
+syntax = "proto2";
+
+package chat;
+
+message Message {
+    optional string receiver = 1;
+    required string sender = 2;
+    required string message = 3;
+}
+
+message UserInfo {
+    required string username = 1;
+    required string ip = 2;
+    required int32 status = 3;
+}
+
+message UserServerOperation{
+    required bool  r_type = 1;
+    optional string user_name = 2;
+    repeated UserInfo all_users = 3;
+    optional int32 new_status = 4;
+    optional int32 server_status = 5;
+}
