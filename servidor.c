@@ -6,48 +6,110 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <pthread.h>
 
 #include "chat.pb-c.h"
 
 #define BACKLOG 10
 #define BUFFER_SIZE 1024
 
-void handle_client(int client_socket) {
-    // Recibir un buffer del socket
+typedef  struct {
+    char username[100];
+    char ip[50];
+    int socketFD;
+    int status;
+} User;
+
+
+#define MAX_USERS 50 // Define el tamaño máximo de la lista
+
+User userList[MAX_USERS]; // Crea un arreglo de estructuras de usuario con tamaño máximo de MAX_USERS
+int numUsers = 0; // El número actual de usuarios en la lista, inicializado en 0
+
+// Agrega un usuario a la lista
+void addUser(char* username, char* ip, int socketFD, int status) {
+    if (numUsers >= MAX_USERS) {
+        printf("La lista de usuarios está llena. No se puede agregar más usuarios.\n");
+        return;
+    }
+    User newUser;
+    strcpy(newUser.username, username);
+    strcpy(newUser.ip, ip);
+    newUser.socketFD = socketFD;
+    newUser.status = status;
+    userList[numUsers] = newUser;
+    numUsers++;
+}
+
+
+// void handle_client(int client_socket) {
+//     // Recibir un buffer del socket
+//     uint8_t recv_buffer[BUFFER_SIZE];
+//     ssize_t recv_size = recv(client_socket, recv_buffer, sizeof(recv_buffer), 0);
+//     if (recv_size < 0) {
+//         perror("Error al recibir el mensaje");
+//         exit(1);
+//     }
+
+//     // Deserializar el buffer en un mensaje Message
+//     Chat__Message *message = chat__message__unpack(NULL, recv_size, recv_buffer);
+
+//     printf("Mensaje recibido de %s: %s\n", message->message_sender, message-> message_content);
+
+//     // Crear una respuesta
+//     Chat__Message response          = CHAT__MESSAGE__INIT;
+//     response.message_private        = '0';
+//     response.message_destination    = "Cliente";
+//     response.message_content        = "Mensaje recibido correctamente";
+//     response.message_sender = message->message_sender;
+
+//     // Serializar la respuesta en un buffer
+//     size_t serialized_size = chat__message__get_packed_size(&response);
+//     uint8_t *buffer = malloc(serialized_size);
+//     chat__message__pack(&response, buffer);
+
+//     // Enviar el buffer de respuesta a través del socket
+//     if (send(client_socket, buffer, serialized_size, 0) < 0) {
+//         perror("Error al enviar la respuesta");
+//         exit(1);
+//     }
+
+//     // Liberar los buffers y el mensaje
+//     free(buffer);
+//     chat__message__free_unpacked(message, NULL);
+//     close(client_socket);
+// }
+void* handle_client(void *arg) {
+    int client_socket = *(int*)arg;
+
+    // Recibir el mensaje del cliente
     uint8_t recv_buffer[BUFFER_SIZE];
     ssize_t recv_size = recv(client_socket, recv_buffer, sizeof(recv_buffer), 0);
     if (recv_size < 0) {
-        perror("Error al recibir el mensaje");
+        perror("Error al recibir el mensaje del cliente");
         exit(1);
     }
 
-    // Deserializar el buffer en un mensaje Message
-    Chat__Message *message = chat__message__unpack(NULL, recv_size, recv_buffer);
+    // Deserializar el mensaje en un struct ChatMessage
+    // ChatMessage *chat_message = chat_message__unpack(NULL, recv_size, recv_buffer);
+    Chat__Message *chat_message = chat__message__unpack(NULL, recv_size, recv_buffer);
 
-    printf("Mensaje recibido de %s: %s\n", message->sender, message->message);
 
-    // Crear una respuesta
-    Chat__Message response = CHAT__MESSAGE__INIT;
-    response.sender = "servidor";
-    response.receiver = message->sender;
-    response.message = "Mensaje recibido correctamente";
-
-    // Serializar la respuesta en un buffer
-    size_t serialized_size = chat__message__get_packed_size(&response);
-    uint8_t *buffer = malloc(serialized_size);
-    chat__message__pack(&response, buffer);
-
-    // Enviar el buffer de respuesta a través del socket
-    if (send(client_socket, buffer, serialized_size, 0) < 0) {
-        perror("Error al enviar la respuesta");
+    if (chat_message == NULL) {
+        fprintf(stderr, "Error al deserializar el mensaje del cliente\n");
         exit(1);
     }
 
-    // Liberar los buffers y el mensaje
-    free(buffer);
-    chat__message__free_unpacked(message, NULL);
+    printf("Mensaje recibido de %s: %s\n", chat_message->message_sender, chat_message-> message_content);
+    // printf("Mensaje recibido del cliente %d: %s\n", client_socket, chat_message->content);
+
+    addUser()
+
+    // Liberar los recursos utilizados por el mensaje y cerrar el socket del cliente
+    chat_message__free_unpacked(chat_message, NULL);
     close(client_socket);
 }
+
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -58,6 +120,7 @@ int main(int argc, char **argv) {
     int server_port = atoi(argv[1]);
 
     // Crear el socket del servidor
+
     int server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket < 0) {
         perror("Error al crear el socket del servidor");
@@ -65,6 +128,7 @@ int main(int argc, char **argv) {
     }
 
     // Permitir la reutilización de la dirección y puerto del servidor
+
     int option = 1;
     if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
         perror("Error al configurar las opciones del socket");
@@ -72,6 +136,7 @@ int main(int argc, char **argv) {
     }
 
     // Configurar la dirección y puerto del servidor
+
     struct sockaddr_in server_address;
     memset(&server_address, 0, sizeof(server_address));
     server_address.sin_family = AF_INET;
@@ -93,19 +158,26 @@ int main(int argc, char **argv) {
     printf("Servidor iniciado en el puerto %d\n", server_port);
 
     while (1) {
-        // Aceptar una conexión
-    struct sockaddr_in client_address;
-    socklen_t client_address_len = sizeof(client_address);
-    int client_socket = accept(server_socket, (struct sockaddr *)&client_address, &client_address_len);
-    if (client_socket < 0) {
-        perror("Error al aceptar la conexión entrante");
-        exit(1);
+        // Esperar a que llegue una conexión
+        struct sockaddr_in client_address;
+        socklen_t client_address_length = sizeof(client_address);
+        int client_socket = accept(server_socket, (struct sockaddr *)&client_address, &client_address_length);
+        if (client_socket < 0) {
+            perror("Error al aceptar la conexión del cliente");
+            exit(1);
+        }
+
+        printf("Cliente conectado desde %s:%d\n", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
+
+        // Crear un nuevo hilo para el cliente
+        pthread_t thread;
+        if (pthread_create(&thread, NULL, handle_client, (void *)&client_socket) < 0) {
+            perror("Error al crear el hilo del cliente");
+            exit(1);
+        }
     }
 
-    printf("Nueva conexión entrante desde %s:%d\n", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
-
-    handle_client(client_socket);
-}
 
 return 0;
+
 }
