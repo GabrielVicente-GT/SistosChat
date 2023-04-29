@@ -92,21 +92,69 @@ void* handle_client(void *arg) {
 
     // Deserializar el mensaje en un struct ChatMessage
     // ChatMessage *chat_message = chat_message__unpack(NULL, recv_size, recv_buffer);
-    Chat__Message *chat_message = chat__message__unpack(NULL, recv_size, recv_buffer);
+    Chat__NewUser *chat_registration = chat__new_user__unpack(NULL, recv_size, recv_buffer);
 
 
-    if (chat_message == NULL) {
+    if (chat_registration == NULL) {
         fprintf(stderr, "Error al deserializar el mensaje del cliente\n");
         exit(1);
     }
 
-    printf("Mensaje recibido de %s: %s\n", chat_message->message_sender, chat_message-> message_content);
+    printf("Mensaje recibido de %s: %s\n", chat_registration->username, chat_registration-> ip);
     // printf("Mensaje recibido del cliente %d: %s\n", client_socket, chat_message->content);
 
-    addUser()
 
+    addUser(chat_registration->username,chat_registration->ip,client_socket, 0);
+
+    // Informacion del Cliente
+
+    User MyInfo;
+    strcpy(MyInfo.username, chat_registration->username);
+    strcpy(MyInfo.ip, chat_registration->ip);
+    MyInfo.socketFD = client_socket;
+    MyInfo.status = 0;
+
+    printf("Nombre de usuario: %s\n", MyInfo.username);
+    printf("Dirección IP: %s\n", MyInfo.ip);
+    printf("Descriptor de archivo del socket: %d\n", MyInfo.socketFD);
+    printf("Estado: %d\n", MyInfo.status);
+
+
+    // Crear una respuesta
+    Chat__Message response          = CHAT__MESSAGE__INIT;
+    response.message_private        = '0';
+    response.message_destination    = "asdfasdf";
+    response.message_content        = "Registro recibido correctamente";
+    response.message_sender         = "Servidor";
+
+    // Serializar la respuesta en un buffer
+    size_t serialized_size = chat__message__get_packed_size(&response);
+    uint8_t *buffer = malloc(serialized_size);
+    chat__message__pack(&response, buffer);
+
+    // Enviar el buffer de respuesta a través del socket
+    if (send(client_socket, buffer, serialized_size, 0) < 0) {
+        perror("Error al enviar la respuesta");
+        exit(1);
+    }
+
+    // Liberar los buffers y el mensaje
+    free(buffer);
     // Liberar los recursos utilizados por el mensaje y cerrar el socket del cliente
-    chat_message__free_unpacked(chat_message, NULL);
+
+    chat__new_user__free_unpacked(chat_registration, NULL);
+
+    printf("Informacion de todos los usuarios dentro de la lista\n");
+
+    for (int i = 0; i < numUsers; i++) {
+        printf("Información del usuario #%d:\n", i+1);
+        printf("Nombre de usuario: %s\n", userList[i].username);
+        printf("Dirección IP: %s\n", userList[i].ip);
+        printf("Descriptor de archivo del socket: %d\n", userList[i].socketFD);
+        printf("Estado: %d\n", userList[i].status);
+        printf("\n");
+    }
+
     close(client_socket);
 }
 

@@ -50,6 +50,7 @@
 // }
 
 int main(int argc, char **argv) {
+    
     if (argc != 4) {
         printf("Uso: %s <ip_servidor> <puerto_servidor> <usuario>\n", argv[0]);
         exit(1);
@@ -82,23 +83,28 @@ int main(int argc, char **argv) {
 
     printf("Conectado al servidor %s:%d\n", server_ip, server_port);
 
-    // Crear un mensaje Message
+    // Si se conecto manda el registro
     Chat__NewUser registration = CHAT__NEW_USER__INIT;
     registration.username    = username;
     registration.ip = "0";
 
-    // Serializar el mensaje en un buffer
+    // Serializando registro
     size_t serialized_size = chat__new_user__get_packed_size(&registration);
     uint8_t *buffer = malloc(serialized_size);
     chat__new_user__pack(&registration, buffer);
 
-    // Enviar el buffer a través del socket
+    // Enviar registro
     if (send(client_socket, buffer, serialized_size, 0) < 0) {
         perror("Error al enviar el mensaje");
         exit(1);
     }
 
     printf("Mensaje enviado: %s\n", registration.ip);
+
+    /*
+    Respuesta del servidor
+    */
+
 
     // Recibir un buffer del socket
     uint8_t recv_buffer[BUFFER_SIZE];
