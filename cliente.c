@@ -28,26 +28,32 @@
 //     return response_size;
 // }
 
-// char* get_ip()
-// {
-//     CURL *curl;
-//     CURLcode res;
-//     char* readBuffer = (char*)malloc(sizeof(char) * 16); // asumiendo que la dirección IP es de 15 caracteres o menos
+char *get_local_ip()
+{
+    struct ifaddrs *ifaddr, *ifa;
+    char *local_ip = NULL;
 
-//     curl = curl_easy_init();
-//     if (curl)
-//     {
-//         curl_easy_setopt(curl, CURLOPT_URL, "https://api.ipify.org");
-//         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-//         curl_easy_setopt(curl, CURLOPT_WRITEDATA, readBuffer);
-//         res = curl_easy_perform(curl);
-//         if (res != CURLE_OK) {
-//             printf("Error al realizar la solicitud: %s\n", curl_easy_strerror(res));
-//         }
-//         curl_easy_cleanup(curl);
-//     }
-//     return readBuffer;
-// }
+    if (getifaddrs(&ifaddr) == -1) {
+        perror("getifaddrs");
+        exit(EXIT_FAILURE);
+    }
+
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == NULL)
+            continue;
+
+        int family = ifa->ifa_addr->sa_family;
+
+        if (family == AF_INET) {
+            local_ip = malloc(INET_ADDRSTRLEN);
+            inet_ntop(AF_INET, &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr, local_ip, INET_ADDRSTRLEN);
+            break;
+        }
+    }
+
+    freeifaddrs(ifaddr);
+    return local_ip;
+}
 
 int main(int argc, char **argv) {
     
@@ -86,7 +92,8 @@ int main(int argc, char **argv) {
     // Si se conecto manda el registro
     Chat__NewUser registration = CHAT__NEW_USER__INIT;
     registration.username    = username;
-    registration.ip = "0";
+    char *ip = get_local_ip();
+    registration.ip = ip;
 
     // Serializando registro
     size_t serialized_size = chat__new_user__get_packed_size(&registration);
@@ -121,6 +128,7 @@ int main(int argc, char **argv) {
 
     // Liberar los buffers y el mensaje
     free(buffer);
+    free(ip);
     chat__message__free_unpacked(response, NULL);
     close(client_socket);
 
