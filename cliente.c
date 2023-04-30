@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <curl/curl.h>
+#include <ctype.h>
 
 #include "chat.pb-c.h"
 
@@ -27,6 +28,18 @@
 //     memcpy(response, contents, response_size);
 //     return response_size;
 // }
+
+void print_menu() {
+    printf("\nMenu:\n");
+    printf("1. Chatear con otros (general)\n");
+    printf("2. Mensaje privado\n");
+    printf("3. Cambiar status\n");
+    printf("4. Mostrar todos los usuarios conectados\n");
+    printf("5. Desplegar informacion particular de un usuario\n");
+    printf("6. Ayuda\n");
+    printf("7. Salir\n");
+    printf("Enter your choice: "); 
+}
 
 char *get_local_ip()
 {
@@ -104,6 +117,7 @@ int main(int argc, char **argv) {
         exit(1);
     }
     free(buffer);
+    free(ip);
     printf(" >> Registro enviado!");
 
     /*Respuesta del servidor*/
@@ -131,6 +145,111 @@ int main(int argc, char **argv) {
     chat__message__free_unpacked(response, NULL);
 
     /*Menu para el usuario*/
+    int choice = 0;
+    while(choice != 7) {
+        print_menu();
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                {
+                    // Chat with others
+                    char private[] = "0"; // Public message indicator
+                    char destination[] = "";
+                    char content[BUFFER_SIZE];
+
+                    // ingresar los datos
+                    printf("Esriba el mensaje: ");
+                    scanf(" %[^\n]", content); // Leer hasta que se le agreguen datos
+                    
+                    printf("\nprivate: %s", private);
+                    printf("\ndestination: %s", destination);
+                    printf("\ncontent: %s", content);
+                    printf("\nsender: %s", username);
+                }
+                break;
+            case 2:
+                // Private message
+                {
+                    // Chat with others
+                    char private[] = "1"; // Public message indicator
+                    char destination[BUFFER_SIZE];
+                    char content[BUFFER_SIZE];
+
+                    // ingresar los datos
+                    printf("Ingresar destinatario: ");
+                    scanf(" %[^\n]", destination);  // Leer hasta que se le agreguen datos
+                    printf("Esriba el mensaje: ");
+                    scanf(" %[^\n]", content); // Leer hasta que se le agreguen datos
+                    
+                    printf("\nprivate: %s", private);
+                    printf("\ndestination: %s", destination);
+                    printf("\ncontent: %s", content);
+                    printf("\nsender: %s", username);
+                }
+                break;
+            case 3:
+                {
+                    // Change status
+                    char input_str;
+                    int state;
+                    int valid_input = 0;
+                    while (!valid_input) {
+                        valid_input = 1;
+
+                        printf("Choose an option:\n");
+                        printf("1. En linea\n");
+                        printf("2. Ocuapdo\n");
+                        printf("3. Desconectado\n");
+                        scanf(" %c", &input_str); // Read a char from input, skipping whitespace
+
+                        // Check if the input is a valid digit (1 to 3)
+                        if (isdigit(input_str) && input_str >= '1' && input_str <= '3') {
+                            state = input_str - '0'; // Convert the character to its corresponding integer value
+                        } else {
+                            printf("Invalid option. Please choose a number between 1 and 3.\n");
+                            valid_input = 0; // Set valid_input to false
+                        }
+
+                    }
+
+                    printf("\nstate: %i", state);
+                    printf("\nsender: %s", username);
+                }
+                break;
+            case 4:
+                // Show all connected users
+                {
+                    char connectedUsers = 0;
+                }
+                break;
+            case 5:
+                // Show specific user information
+                {
+                    char UserInformation[BUFFER_SIZE];
+
+                    // ingresar los datos
+                    printf("Ingresar nombre de usuario que desea obtener la informacion: ");
+                    scanf(" %[^\n]", UserInformation);  // Leer hasta que se le agreguen datos
+                
+                    printf("UserInformation: %s", UserInformation);
+                }
+                break;
+            case 6:
+                // Help
+                {
+                    char help = 0;
+                }
+                break;
+            case 7:
+                // Exit
+                printf("Exiting...");
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+                break;
+        }
+    }
 
     close(client_socket);
 
