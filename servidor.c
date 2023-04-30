@@ -41,6 +41,25 @@ void addUser(char* username, char* ip, int socketFD, int status) {
     numUsers++;
 }
 
+// Elimina un usuario de la lista
+void removeUser(char* username, char* ip, int socketFD, int status) {
+    int i, j;
+    for (i = 0; i < numUsers; i++) {
+        User user = userList[i];
+        if (strcmp(user.username, username) == 0 && strcmp(user.ip, ip) == 0 && user.socketFD == socketFD && user.status == status) {
+            // Encontró el usuario, lo elimina
+            for (j = i; j < numUsers-1; j++) {
+                userList[j] = userList[j+1];
+            }
+            numUsers--;
+            printf("Usuario eliminado: %s\n", username);
+            return;
+        }
+    }
+    // No encontró al usuario
+    printf("No se encontró al usuario: %s\n", username);
+}
+
 
 // void handle_client(int client_socket) {
 //     // Recibir un buffer del socket
@@ -82,7 +101,7 @@ void addUser(char* username, char* ip, int socketFD, int status) {
 void* handle_client(void *arg) {
     int client_socket = *(int*)arg;
 
-    // Recibir el mensaje del cliente
+    // Recibir el registro del cliente
     uint8_t recv_buffer[BUFFER_SIZE];
     ssize_t recv_size = recv(client_socket, recv_buffer, sizeof(recv_buffer), 0);
     if (recv_size < 0) {
@@ -90,41 +109,36 @@ void* handle_client(void *arg) {
         exit(1);
     }
 
-    // Deserializar el mensaje en un struct ChatMessage
-    // ChatMessage *chat_message = chat_message__unpack(NULL, recv_size, recv_buffer);
+    // Deserializar el registro de NewUser
     Chat__NewUser *chat_registration = chat__new_user__unpack(NULL, recv_size, recv_buffer);
-
-
     if (chat_registration == NULL) {
         fprintf(stderr, "Error al deserializar el mensaje del cliente\n");
         exit(1);
     }
 
-    printf("Mensaje recibido de %s: %s\n", chat_registration->username, chat_registration-> ip);
+    printf("\n >> Nuevo usuario conectado! \n >> Nombre: %s \n >> IP: %s\n", chat_registration->username, chat_registration-> ip);
     // printf("Mensaje recibido del cliente %d: %s\n", client_socket, chat_message->content);
 
-
+    // Agregar usuario conectado a la lista de usuarios
     addUser(chat_registration->username,chat_registration->ip,client_socket, 0);
 
-    // Informacion del Cliente
-
+    // Informacion del Cliente asociada al thread
     User MyInfo;
     strcpy(MyInfo.username, chat_registration->username);
     strcpy(MyInfo.ip, chat_registration->ip);
     MyInfo.socketFD = client_socket;
     MyInfo.status = 0;
-
     printf("Nombre de usuario: %s\n", MyInfo.username);
     printf("Dirección IP: %s\n", MyInfo.ip);
     printf("Descriptor de archivo del socket: %d\n", MyInfo.socketFD);
     printf("Estado: %d\n", MyInfo.status);
 
 
-    // Crear una respuesta
+    // Respuesta del servidor
     Chat__Message response          = CHAT__MESSAGE__INIT;
-    response.message_private        = '0';
-    response.message_destination    = "asdfasdf";
-    response.message_content        = "Registro recibido correctamente";
+    response.message_private        = '1';
+    response.message_destination    = MyInfo.username;
+    response.message_content        = "Fuiste registrado!";
     response.message_sender         = "Servidor";
 
     // Serializar la respuesta en un buffer
@@ -141,10 +155,9 @@ void* handle_client(void *arg) {
     // Liberar los buffers y el mensaje
     free(buffer);
     // Liberar los recursos utilizados por el mensaje y cerrar el socket del cliente
-
     chat__new_user__free_unpacked(chat_registration, NULL);
 
-    printf("Informacion de todos los usuarios dentro de la lista\n");
+    printf("\n\n ---- Usuarios dentro del chat ----\n");
 
     for (int i = 0; i < numUsers; i++) {
         printf("Información del usuario #%d:\n", i+1);
@@ -215,7 +228,7 @@ int main(int argc, char **argv) {
             exit(1);
         }
 
-        printf("Cliente conectado desde %s:%d\n", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
+        printf("\nCliente conectado desde %s:%d\n", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
 
         // Crear un nuevo hilo para el cliente
         pthread_t thread;

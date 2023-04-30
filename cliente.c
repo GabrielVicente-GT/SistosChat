@@ -80,14 +80,12 @@ int main(int argc, char **argv) {
     server_address.sin_port = htons(server_port);
     inet_pton(AF_INET, server_ip, &server_address.sin_addr);
 
-
-
     if (connect(client_socket, (struct sockaddr *)&server_address, sizeof(server_address)) < 0) {
         perror("Error al conectar con el servidor");
         exit(1);
     }
 
-    printf("Conectado al servidor %s:%d\n", server_ip, server_port);
+    printf("\nConectado al servidor %s:%d\n\n", server_ip, server_port);
 
     // Si se conecto manda el registro
     Chat__NewUser registration = CHAT__NEW_USER__INIT;
@@ -105,14 +103,11 @@ int main(int argc, char **argv) {
         perror("Error al enviar el mensaje");
         exit(1);
     }
+    free(buffer);
+    printf(" >> Registro enviado!");
 
-    printf("Mensaje enviado: %s\n", registration.ip);
-
-    /*
-    Respuesta del servidor
-    */
-
-
+    /*Respuesta del servidor*/
+    
     // Recibir un buffer del socket
     uint8_t recv_buffer[BUFFER_SIZE];
     ssize_t recv_size = recv(client_socket, recv_buffer, sizeof(recv_buffer), 0);
@@ -124,12 +119,19 @@ int main(int argc, char **argv) {
     // Deserializar el buffer en un mensaje Message
     Chat__Message *response = chat__message__unpack(NULL, recv_size, recv_buffer);
 
-    printf("Respuesta recibida: %s\n", response->message_content);
+    printf("\n\n ---- Respuesta de registro ----\n");
+    printf(" >> TIPO DE MENSAJE: %d\n",     response->message_private);
+    printf(" >> SENDER: %s\n",              response->message_sender);
+    printf(" >> DESTINATION: %s\n",         response->message_destination);
+    printf(" >> CONTENT: %s\n\n",             response->message_content);
+    
+    // printf("\n\n [%s] --> [%s]: '%s' \n\n", response->message_sender, response->message_destination, response->message_content);
 
     // Liberar los buffers y el mensaje
-    free(buffer);
-    free(ip);
     chat__message__free_unpacked(response, NULL);
+
+    /*Menu para el usuario*/
+
     close(client_socket);
 
     return 0;
