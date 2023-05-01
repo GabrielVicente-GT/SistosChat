@@ -100,6 +100,7 @@ void removeUser(char* username, char* ip, int socketFD, int status) {
 // }
 void* handle_client(void *arg) {
     int client_socket = *(int*)arg;
+    int client_in_session = 1;
 
     // Recibir el registro del cliente
     uint8_t recv_buffer[BUFFER_SIZE];
@@ -127,11 +128,11 @@ void* handle_client(void *arg) {
     strcpy(MyInfo.username, chat_registration->username);
     strcpy(MyInfo.ip, chat_registration->ip);
     MyInfo.socketFD = client_socket;
-    MyInfo.status = 0;
-    printf("Nombre de usuario: %s\n", MyInfo.username);
-    printf("Dirección IP: %s\n", MyInfo.ip);
-    printf("Descriptor de archivo del socket: %d\n", MyInfo.socketFD);
-    printf("Estado: %d\n", MyInfo.status);
+    MyInfo.status = 2;
+    // printf("Nombre de usuario: %s\n", MyInfo.username);
+    // printf("Dirección IP: %s\n", MyInfo.ip);
+    // printf("Descriptor de archivo del socket: %d\n", MyInfo.socketFD);
+    // printf("Estado: %d\n", MyInfo.status);
 
 
     // Respuesta del servidor
@@ -167,6 +168,60 @@ void* handle_client(void *arg) {
         printf("Estado: %d\n", userList[i].status);
         printf("\n");
     }
+    printf("Entrando en loop");
+
+    // while (client_in_session == 1)
+    // {
+    //     // Recibir opcion seleccionada del cliente
+    //     uint8_t recv_buffer_opcion[BUFFER_SIZE];
+    //     ssize_t recv_size_opcion = recv(client_socket, recv_buffer_opcion, sizeof(recv_buffer_opcion), 0);
+    //     if (recv_size_opcion < 0) {
+    //         perror("Error al recibir el mensaje del cliente");
+    //         exit(1);
+    //     }
+    //     // Deserializar la opcion elegida del cliente
+    //     Chat__UserOption *client_opcion = chat__user_option__unpack(NULL, recv_size_opcion, recv_buffer_opcion);
+    //     if (client_opcion == NULL) {
+    //         fprintf(stderr, "Error al deserializar el mensaje del cliente\n");
+    //         exit(1);
+    //     }
+
+    //     int opcion_elegida = client_opcion->op;
+
+    //     printf("Opcion recibida");
+
+    //     switch (opcion_elegida) {
+    //         case 1:
+    //             printf("[%s] escogio --> [%d]",MyInfo.username,opcion_elegida);
+    //             break;
+    //         case 2:
+    //             // Lógica para manejar la opción 2
+    //             printf("[%s] escogio --> [%d]",MyInfo.username,opcion_elegida);
+    //             break;
+    //         case 3:
+    //             // Lógica para manejar la opción 3
+    //             break;
+    //         case 4:
+    //             // Lógica para manejar la opción 4
+    //             break;
+    //         case 5:
+    //             // Lógica para manejar la opción 5
+    //             break;
+    //         case 6:
+    //             // Lógica para manejar la opción 6
+    //             break;
+    //         case 7:
+    //             // Lógica para manejar la opción 7
+    //             break;
+    //         default:
+    //             fprintf(stderr, "Opción no válida: %d\n", opcion_elegida);
+    //             break;
+    //     }
+
+
+    //     //Libera el desempaquetamiento
+    //     chat__user_option__free_unpacked(client_opcion, NULL);
+    // }
 
     close(client_socket);
 }
