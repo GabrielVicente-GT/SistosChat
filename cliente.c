@@ -8,9 +8,8 @@
 #include <netdb.h>
 #include <curl/curl.h>
 #include <ctype.h>
-
+#include <pthread.h>
 #include "chat.pb-c.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ifaddrs.h>
@@ -28,6 +27,72 @@
 //     memcpy(response, contents, response_size);
 //     return response_size;
 // }
+
+void* client_listening(void *arg) {
+    int client_socket = *(int*)arg;
+
+    while (1)
+    {
+        // Recibir un buffer del socket
+        uint8_t recv_buffer[BUFFER_SIZE];
+        ssize_t recv_size = recv(client_socket, recv_buffer, sizeof(recv_buffer), 0);
+        if (recv_size < 0) {
+            perror("Error al recibir la respuesta");
+            exit(1);
+        }
+
+        // Deserializar el buffer en un mensaje Message
+        Chat__Answer *response_servidor = chat__answer__unpack(NULL, recv_size, recv_buffer);
+
+        int choice = response_servidor->op; // Supongamos que response_servidor->op tiene un valor entre 1 y 7
+
+        switch (choice) {
+            case 1:
+                printf("");
+                Chat__Message *mensaje_recibido = response_servidor->message;
+                printf("\n[%s] --> [%s]: %s",mensaje_recibido->message_sender, "TODOS", mensaje_recibido->message_content);
+                printf("\n");
+                // Código para la opción 1
+                break;
+            case 2:
+                printf("Opción 2 seleccionada\n");
+                // Código para la opción 2
+                break;
+            case 3:
+                printf("Opción 3 seleccionada\n");
+                // Código para la opción 3
+                break;
+            case 4:
+                printf("Opción 4 seleccionada\n");
+                // Código para la opción 4
+                break;
+            case 5:
+                printf("Opción 5 seleccionada\n");
+                // Código para la opción 5
+                break;
+            case 6:
+                printf("Opción 6 seleccionada\n");
+                // Código para la opción 6
+                break;
+            case 7:
+                printf("Opción 7 seleccionada\n");
+                // Código para la opción 7
+                break;
+            default:
+                printf("Opción inválida seleccionada\n");
+                // Código para la opción inválida
+                break;
+        }
+
+
+        // Liberar los buffers y el mensaje
+        chat__answer__free_unpacked(response_servidor, NULL);
+
+    }
+    
+
+    close(client_socket);
+}
 
 void print_menu() {
     printf("\nMenu:\n");
@@ -146,6 +211,13 @@ int main(int argc, char **argv) {
 
     /*Menu para el usuario*/
     int choice = 0;
+
+    pthread_t thread;
+    if (pthread_create(&thread, NULL, client_listening, (void *)&client_socket) < 0) {
+        perror("Error al crear el hilo del escuchador del cliente");
+        exit(1);
+    }
+
     while(choice != 7) {
         print_menu();
         scanf("%d", &choice);
@@ -153,25 +225,36 @@ int main(int argc, char **argv) {
         switch (choice) {
             case 1:
                 {
-                    // // Chat with others
-                    // char private[] = "0"; // Public message indicator
-                    // char destination[] = "";
-                    // char content[BUFFER_SIZE];
+                    // Chat with others
+                    char private[] = "0"; // Public message indicator
+                    char destination[] = "";
+                    char content[BUFFER_SIZE];
 
-                    // // ingresar los datos
-                    // printf("Esriba el mensaje: ");
-                    // scanf(" %[^\n]", content); // Leer hasta que se le agreguen datos
+                    // ingresar los datos
+                    printf("Esriba el mensaje: ");
+                    scanf(" %[^\n]", content); // Leer hasta que se le agreguen datos
                     
-                    // printf("\nprivate: %s", private);
-                    // printf("\ndestination: %s", destination);
-                    // printf("\ncontent: %s", content);
-                    // printf("\nsender: %s", username);
+                    printf("\nprivate: %s", private);
+                    printf("\ndestination: %s", destination);
+                    printf("\ncontent: %s", content);
+                    printf("\nsender: %s", username);
 
                     //Enviar al servidor UserOption
 
-                    printf("\nEstoy en Cliente\n");
+                    printf("\n\n");
+
+                    //Mensaje General
+
+                    Chat__Message mensaje_directo   = CHAT__MESSAGE__INIT;
+                    mensaje_directo.message_private        = '0';
+                    mensaje_directo.message_destination    = destination;
+                    mensaje_directo.message_content        = content;
+                    mensaje_directo.message_sender         = username;
+
                     Chat__UserOption opcion_escogida    = CHAT__USER_OPTION__INIT;
                     opcion_escogida.op                  = choice;
+                    opcion_escogida.message             = &mensaje_directo;
+
                     // Serializando registro
                     size_t serialized_size_opc = chat__user_option__get_packed_size(&opcion_escogida);
                     uint8_t *buffer_opc = malloc(serialized_size_opc);
@@ -183,7 +266,7 @@ int main(int argc, char **argv) {
                         exit(1);
                     }
                     free(buffer_opc);
-                    printf("\nMensaje enviado\n");
+                    printf("\n\n");
                 }
                 break;
             case 2:

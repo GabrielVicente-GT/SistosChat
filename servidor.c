@@ -121,7 +121,7 @@ void* handle_client(void *arg) {
     // printf("Mensaje recibido del cliente %d: %s\n", client_socket, chat_message->content);
 
     // Agregar usuario conectado a la lista de usuarios
-    // addUser(chat_registration->username,chat_registration->ip,client_socket, 0);
+    addUser(chat_registration->username,chat_registration->ip,client_socket, 0);
 
     // Informacion del Cliente asociada al thread
     User MyInfo;
@@ -191,7 +191,43 @@ void* handle_client(void *arg) {
         printf("[%s] escogio --> [%d]",MyInfo.username,opcion_elegida);
         switch (opcion_elegida) {
             case 1:
-                printf("dentro de opcion1");
+                printf("\n\n");
+                Chat__Message *mensaje_recibido = client_opcion->message;
+                // printf("\n\n ---- Respuesta de registro ----\n");
+                // printf(" >> TIPO DE MENSAJE: %d\n",     mensaje_recibido->message_private);
+                // printf(" >> SENDER: %s\n",              mensaje_recibido->message_sender);
+                // printf(" >> DESTINATION: %s\n",         mensaje_recibido->message_destination);
+                // printf(" >> CONTENT: %s\n\n",           mensaje_recibido->message_content);
+
+
+                // Recorrer la lista de usuarios
+                for (int i = 0; i < numUsers; i++) {
+                    if (strcmp(userList[i].username, MyInfo.username) == 0) {
+                        // Si el usuario se llama Gabriel, omitirlo y continuar con el siguiente
+                        continue;
+                    }
+
+                    Chat__Answer respuesta_servidor          = CHAT__ANSWER__INIT;
+                    respuesta_servidor.op   =   1 ;
+                    respuesta_servidor.response_status_code = 400;
+                    respuesta_servidor.message = mensaje_recibido;
+
+                    // Serializar la respuesta en un buffer
+                    size_t serialized_size_servidor = chat__answer__get_packed_size(&respuesta_servidor);
+                    uint8_t *buffer_servidor = malloc(serialized_size_servidor);
+                    chat__answer__pack(&respuesta_servidor , buffer_servidor);
+
+                    // Enviar el buffer de respuesta a través del socket
+                    if (send(userList[i].socketFD, buffer_servidor, serialized_size_servidor, 0) < 0) {
+                        perror("Error al enviar la respuesta");
+                        exit(1);
+                    }
+
+                    // Liberar los buffers y el mensaje
+                    free(buffer_servidor);
+                    
+                }
+
                 break;
             case 2:
                 // Lógica para manejar la opción 2
