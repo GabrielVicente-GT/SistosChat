@@ -188,14 +188,14 @@ void* handle_client(void *arg) {
         }
 
         int opcion_elegida = client_opcion->op;
-
+        printf("[%s] escogio --> [%d]",MyInfo.username,opcion_elegida);
         switch (opcion_elegida) {
             case 1:
-                printf("[%s] escogio --> [%d]",MyInfo.username,opcion_elegida);
+                printf("dentro de opcion1");
                 break;
             case 2:
                 // Lógica para manejar la opción 2
-                printf("[%s] escogio --> [%d]",MyInfo.username,opcion_elegida);
+                printf("dentro de opcion2");
                 break;
             case 3:
                 // Lógica para manejar la opción 3
