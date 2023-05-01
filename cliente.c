@@ -106,6 +106,17 @@ void print_menu() {
     printf("Enter your choice: "); 
 }
 
+void print_ayuda() {
+    printf("\nAyuda\n");
+    printf("\nSi deseas enviar un mensaje a para que todos los puedan ver escoge la opcion 1.");
+    printf("\nSi deseas hablar en privado con alguien escoge la opcion 2.");
+    printf("\n\tPrimero escribe el nombre del usuario que deseas chatear, y luego el mensaje.");
+    printf("\nSi deseas cambiar tu estatus de conexion escoge la opcion 3.");
+    printf("\nSi deseas saber cuales son los usuarios que estan conectados actualmente escoge la opcion 4.");
+    printf("\nSi deseas saber la informacion especifica de un solo usuario escoge la opcion 5.");
+    printf("\nSi deseas salir del chat escoge la opcion 7.");
+}
+
 char *get_local_ip()
 {
     struct ifaddrs *ifaddr, *ifa;
@@ -357,7 +368,7 @@ int main(int argc, char **argv) {
             case 6:
                 // Help
                 {
-                    char help = 0;
+                    print_ayuda();
                 }
                 break;
             case 7:
