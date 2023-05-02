@@ -446,11 +446,31 @@ int main(int argc, char **argv) {
                             valid_input = 0; // Set valid_input to false
                         }
 
-
                     }
 
-                    printf("\nstate: %i", state);
-                    printf("\nsender: %s", username);
+                    Chat__Status estatus                = CHAT__STATUS__INIT;
+                    estatus.user_name                   = username;
+                    estatus.user_state                  = state;
+                    
+                    Chat__UserOption opcion_escogida    = CHAT__USER_OPTION__INIT;
+                    opcion_escogida.op                  = choice;
+                    opcion_escogida.status              = &estatus;
+
+                    // Serializando registro
+                    size_t serialized_size_opc = chat__user_option__get_packed_size(&opcion_escogida);
+                    uint8_t *buffer_opc = malloc(serialized_size_opc);
+                    chat__user_option__pack(&opcion_escogida, buffer_opc);
+                    
+                    // Enviar registro
+                    if (send(client_socket, buffer_opc, serialized_size_opc, 0) < 0) {
+                        perror("Error al enviar el mensaje");
+                        exit(1);
+                    }
+                    free(buffer_opc);
+                    printf("\n\n");
+                    
+                    // printf("\nstate: %i", state);
+                    // printf("\nsender: %s", username);
                 }
                 break;
             case 4:
@@ -493,8 +513,24 @@ int main(int argc, char **argv) {
                 }
                 break;
             case 6:
-                // Help
                 {
+                // Help
+                Chat__UserOption ayuda    = CHAT__USER_OPTION__INIT;
+                ayuda.op                  = choice;
+
+                // Serializando registro
+                size_t serialized_size_ayuda = chat__user_option__get_packed_size(&ayuda);
+                uint8_t *buffer_ayuda = malloc(serialized_size_ayuda);
+                chat__user_option__pack(&ayuda, buffer_ayuda);
+                
+                // Enviar registro
+                if (send(client_socket, buffer_ayuda, serialized_size_ayuda, 0) < 0) {
+                    perror("Error al enviar el mensaje");
+                    exit(1);
+                }
+                free(buffer_ayuda);
+
+                
                     print_ayuda();
                 }
                 break;

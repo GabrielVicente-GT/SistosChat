@@ -19,6 +19,7 @@ typedef struct
     char ip[50];
     int socketFD;
     int status;
+    time_t last_active;
 } User;
 
 #define MAX_USERS 50 // Define el tamaño máximo de la lista
@@ -52,6 +53,7 @@ void addUser(char *username, char *ip, int socketFD, int status)
     strcpy(newUser.ip, ip);
     newUser.socketFD = socketFD;
     newUser.status = status;
+    newUser.last_active = time(NULL);
     userList[numUsers] = newUser;
     numUsers++;
 }
@@ -77,6 +79,22 @@ void removeUser(char *username, char *ip, int socketFD, int status)
     }
     // No encontró al usuario
     printf("No se encontró al usuario: %s\n", username);
+}
+
+// revisar si esta activo de lo contraio cambiarlo a inactive
+void* check_inactive_users(void *arg) {
+    while (1) {
+        time_t current_time = time(NULL);
+        printf("________________TIME_______________________\n");
+        for (int i = 0; i < numUsers; i++) {
+            double elapsed_time = difftime(current_time, userList[i].last_active);
+            printf("User: %s, Elapsed Time: %.0f\n", userList[i].username, elapsed_time);
+            if (elapsed_time >= 60) {
+                userList[i].status = 3; // Set the status to 3 if the user is inactive for 30 seconds
+            }
+        }
+        sleep(15); // Check the userList every 15 seconds (or any other desired interval)
+    }
 }
 
 // void handle_client(int client_socket) {
@@ -279,6 +297,7 @@ void *handle_client(void *arg)
                 if (strcmp(userList[i].username, MyInfo.username) == 0)
                 {
                     // Si el usuario se llama Gabriel, omitirlo y continuar con el siguiente
+                    userList[i].last_active = time(NULL);
                     continue;
                 }
 
@@ -316,6 +335,7 @@ void *handle_client(void *arg)
             {
                 if (strcmp(userList[i].username, mensaje_recibido_directo->message_destination) == 0)
                 {
+                    userList[i].last_active = time(NULL);
                     enviar_mensaje = 1;
                     indice_usuario = i;
                 }
@@ -373,6 +393,21 @@ void *handle_client(void *arg)
             break;
         case 3:
             // Lógica para manejar la opción 3
+                printf("\n\n");
+                Chat__Status *estatus_recibido = client_opcion->status;
+                // Recorrer la lista de usuarios
+                for (int i = 0; i < numUsers; i++) {
+                    if (strcmp(userList[i].username, MyInfo.username) == 0) {
+                        // Si el usuario se llama Gabriel, cambiar su estado
+                        userList[i].last_active = time(NULL);
+                        userList[i].status = estatus_recibido->user_state;
+
+                        Chat__Answer respuesta_servidor          = CHAT__ANSWER__INIT;
+                        respuesta_servidor.op   =   3 ;
+                        respuesta_servidor.response_status_code = 400;
+                        respuesta_servidor.response_message = "\nStatus changed succesfully";
+                    }
+                }
             break;
         case 4:
             printf("\n\n");
@@ -384,6 +419,9 @@ void *handle_client(void *arg)
 
             for (int i = 0; i < numUsers; i++)
             {
+                if (strcmp(userList[i].username, MyInfo.username) == 0) {
+                    userList[i].last_active = time(NULL);
+                }
                 Chat__User *new_user = malloc(sizeof(Chat__User));
                 chat__user__init(new_user);
                 new_user->user_name = userList[i].username;
@@ -419,6 +457,11 @@ void *handle_client(void *arg)
             break;
         case 6:
             // Lógica para manejar la opción 6
+            for (int i = 0; i < numUsers; i++){
+                if (strcmp(userList[i].username, MyInfo.username) == 0) {
+                    userList[i].last_active = time(NULL);
+                }
+            }
             break;
         case 7:
             chat__user_option__free_unpacked(client_opcion, NULL);
@@ -431,8 +474,8 @@ void *handle_client(void *arg)
         // Libera el desempaquetamiento
         chat__user_option__free_unpacked(client_opcion, NULL);
     }
-salir_del_ciclo:
-    removeUser(MyInfo.username, MyInfo.ip, MyInfo.socketFD, 0);
+    salir_del_ciclo:
+    removeUser(MyInfo.username, MyInfo.ip, MyInfo.socketFD, MyInfo.status);
 
     printf("\n\n ---- Usuarios dentro del chat ----\n");
 
@@ -520,6 +563,12 @@ int main(int argc, char **argv)
         if (pthread_create(&thread, NULL, handle_client, (void *)&client_socket) < 0)
         {
             perror("Error al crear el hilo del cliente");
+            exit(1);
+        }
+        // Crear un hilo para llevar el control de tiempo de los clientes
+        pthread_t inactive_users_thread;
+        if (pthread_create(&inactive_users_thread, NULL, check_inactive_users, NULL)) {
+            perror("Error al crear el hilo del tiempo");
             exit(1);
         }
     }
