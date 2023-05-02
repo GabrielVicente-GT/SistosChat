@@ -17,17 +17,44 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <net/if.h> 
+#include <signal.h>
 
 #define BUFFER_SIZE 1024
 
-// size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
-// {
-//     size_t response_size = size * nmemb;
-//     char* response = (char*)userp;
-//     memcpy(response, contents, response_size);
-//     return response_size;
-// }
+char* estado(int valor) {
+    char* cadena = malloc(sizeof(char) * 40); // Reservamos memoria para la cadena
+    switch (valor) {
+        case 1:
+            strcpy(cadena, "ACTIVO");
+            break;
+        case 2:
+            strcpy(cadena, "OCUPADO");
+            break;
+        case 3:
+            strcpy(cadena, "INACTIVO");
+            break;
+        default:
+            strcpy(cadena, "FUERA DEL SERVER");
+            break;
+    }
+    return cadena;
+}
 
+void handle_sigint(int sig) {
+  printf("Programa interrumpido con ^C\n");
+  exit(1); // Salir del programa con un código de error
+}
+void print_menu() {
+    printf("\nMenu:\n");
+    printf("1. Chatear con otros (general)\n");
+    printf("2. Mensaje privado\n");
+    printf("3. Cambiar status\n");
+    printf("4. Mostrar todos los usuarios conectados\n");
+    printf("5. Desplegar informacion particular de un usuario\n");
+    printf("6. Ayuda\n");
+    printf("7. Salir\n");
+    printf("Enter your choice:"); 
+}
 void* client_listening(void *arg) {
     int client_socket = *(int*)arg;
 
@@ -41,6 +68,11 @@ void* client_listening(void *arg) {
             exit(1);
         }
 
+        if (recv_size == 0) {
+            perror("Servidor Apagado");
+            exit(1);
+        }
+
         // Deserializar el buffer en un mensaje Message
         Chat__Answer *response_servidor = chat__answer__unpack(NULL, recv_size, recv_buffer);
 
@@ -48,14 +80,28 @@ void* client_listening(void *arg) {
 
         switch (choice) {
             case 1:
+                
                 printf("");
-                Chat__Message *mensaje_recibido = response_servidor->message;
-                printf("\n[%s] --> [%s]: %s",mensaje_recibido->message_sender, "TODOS", mensaje_recibido->message_content);
-                printf("\n");
+                if (response_servidor->response_status_code == 400)
+                {
+                    Chat__Message *mensaje_recibido = response_servidor->message;
+                    printf("\n\n[%s] --> [%s]: %s\n",mensaje_recibido->message_sender, "TODOS", mensaje_recibido->message_content);
+                }
+                
+
                 // Código para la opción 1
                 break;
             case 2:
-                printf("Opción 2 seleccionada\n");
+                printf("");
+                if (response_servidor->response_status_code == 400)
+                {
+                    Chat__Message *mensaje_recibido = response_servidor->message;
+                    printf("\n\n[%s] --> [%s]: %s\n",mensaje_recibido->message_sender, mensaje_recibido->message_destination, mensaje_recibido->message_content);
+  
+                }else{
+                    Chat__Message *mensaje_recibido = response_servidor->message;
+                    printf("\n\n[%s] --> [%s]: %s\n",mensaje_recibido->message_sender, mensaje_recibido->message_destination, response_servidor->response_message); 
+                }
                 // Código para la opción 2
                 break;
             case 3:
@@ -63,6 +109,15 @@ void* client_listening(void *arg) {
                 // Código para la opción 3
                 break;
             case 4:
+                printf("\n\n >> Usuarios Conectados <<\n");
+                Chat__UsersOnline *usuarios_conected = response_servidor->users_online;
+                for (int i = 0; i < usuarios_conected->n_users; i++){
+                    Chat__User *usuario_leido = usuarios_conected->users[i];
+                    char nombre_estado[40];
+                    strcpy(nombre_estado, estado(usuario_leido->user_state));
+                    printf("%d",usuario_leido->user_state);
+                    printf("\n >> [%s] -- [%s] -- [%s]\n\n", usuario_leido->user_name, usuario_leido->user_ip, nombre_estado);
+                }   
                 printf("Opción 4 seleccionada\n");
                 // Código para la opción 4
                 break;
@@ -84,7 +139,8 @@ void* client_listening(void *arg) {
                 break;
         }
 
-
+        printf("\nEnter your choice:\n");
+        saliendo:
         // Liberar los buffers y el mensaje
         chat__answer__free_unpacked(response_servidor, NULL);
 
@@ -94,17 +150,6 @@ void* client_listening(void *arg) {
     close(client_socket);
 }
 
-void print_menu() {
-    printf("\nMenu:\n");
-    printf("1. Chatear con otros (general)\n");
-    printf("2. Mensaje privado\n");
-    printf("3. Cambiar status\n");
-    printf("4. Mostrar todos los usuarios conectados\n");
-    printf("5. Desplegar informacion particular de un usuario\n");
-    printf("6. Ayuda\n");
-    printf("7. Salir\n");
-    printf("Enter your choice: "); 
-}
 
 void print_ayuda() {
     printf("\nAyuda\n");
@@ -151,10 +196,14 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
+    signal(SIGINT, handle_sigint);
+
     char *server_ip = argv[1];
     int server_port = atoi(argv[2]);
     char *username = argv[3];
 
+    /*Menu para el usuario*/
+    int choice = 0;
     // Crear el socket
     int client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket < 0) {
@@ -182,19 +231,36 @@ int main(int argc, char **argv) {
     char *ip = get_local_ip();
     registration.ip = ip;
 
-    // Serializando registro
-    size_t serialized_size = chat__new_user__get_packed_size(&registration);
-    uint8_t *buffer = malloc(serialized_size);
-    chat__new_user__pack(&registration, buffer);
+    Chat__UserOption user_option_registration    = CHAT__USER_OPTION__INIT;
+    user_option_registration.op                  = choice;
+    user_option_registration.createuser          = &registration;
 
+    // Serializando registro
+    size_t serialized_size_registration = chat__user_option__get_packed_size(&user_option_registration);
+    uint8_t *buffer_registration = malloc(serialized_size_registration);
+    chat__user_option__pack(&user_option_registration, buffer_registration);
+    
     // Enviar registro
-    if (send(client_socket, buffer, serialized_size, 0) < 0) {
+    if (send(client_socket, buffer_registration, serialized_size_registration, 0) < 0) {
         perror("Error al enviar el mensaje");
         exit(1);
     }
-    free(buffer);
+
+    free(buffer_registration);
+
+    // Serializando registro
+    // size_t serialized_size = chat__new_user__get_packed_size(&registration);
+    // uint8_t *buffer = malloc(serialized_size);
+    // chat__new_user__pack(&registration, buffer);
+
+    // // Enviar registro
+    // if (send(client_socket, buffer, serialized_size, 0) < 0) {
+    //     perror("Error al enviar el mensaje");
+    //     exit(1);
+    // }
+    // free(buffer);
     free(ip);
-    printf(" >> Registro enviado!");
+    printf(" >> Registro enviado");
 
     /*Respuesta del servidor*/
     
@@ -207,21 +273,45 @@ int main(int argc, char **argv) {
     }
 
     // Deserializar el buffer en un mensaje Message
-    Chat__Message *response = chat__message__unpack(NULL, recv_size, recv_buffer);
+    Chat__Answer *response = chat__answer__unpack(NULL, recv_size, recv_buffer);
 
-    printf("\n\n ---- Respuesta de registro ----\n");
-    printf(" >> TIPO DE MENSAJE: %d\n",     response->message_private);
-    printf(" >> SENDER: %s\n",              response->message_sender);
-    printf(" >> DESTINATION: %s\n",         response->message_destination);
-    printf(" >> CONTENT: %s\n\n",             response->message_content);
+    if(response->response_status_code == 400){
+        printf("\n\n[%s] --> [%s]: %s\n","Servidor", username, response->response_message);
+                
+    }else{
+        cliente_interrumpido:
+        printf("\n\n[%s] --> [%s]: %s\n","Servidor", username, response->response_message);
+        choice = 7;
+
+        Chat__UserOption finalizar    = CHAT__USER_OPTION__INIT;
+        finalizar.op                  = choice;
+
+        // Serializando registro
+        size_t serialized_size_finalizar = chat__user_option__get_packed_size(&finalizar);
+        uint8_t *buffer_finalizar = malloc(serialized_size_finalizar);
+        chat__user_option__pack(&finalizar, buffer_finalizar);
+        
+        // Enviar registro
+        if (send(client_socket, buffer_finalizar, serialized_size_finalizar, 0) < 0) {
+            perror("Error al enviar el mensaje");
+            exit(1);
+        }
+        free(buffer_finalizar);
+        printf("\n\n");
+    }
+    
+
+    // printf("\n\n ---- Respuesta de registro ----\n");
+    // printf(" >> TIPO DE MENSAJE: %d\n",     response->message_private);
+    // printf(" >> SENDER: %s\n",              response->message_sender);
+    // printf(" >> DESTINATION: %s\n",         response->message_destination);
+    // printf(" >> CONTENT: %s\n\n",             response->message_content);
     
     // printf("\n\n [%s] --> [%s]: '%s' \n\n", response->message_sender, response->message_destination, response->message_content);
 
     // Liberar los buffers y el mensaje
-    chat__message__free_unpacked(response, NULL);
+    chat__answer__free_unpacked(response, NULL);
 
-    /*Menu para el usuario*/
-    int choice = 0;
 
     pthread_t thread;
     if (pthread_create(&thread, NULL, client_listening, (void *)&client_socket) < 0) {
@@ -245,11 +335,11 @@ int main(int argc, char **argv) {
                     printf("Esriba el mensaje: ");
                     scanf(" %[^\n]", content); // Leer hasta que se le agreguen datos
                     
-                    printf("\nprivate: %s", private);
-                    printf("\ndestination: %s", destination);
-                    printf("\ncontent: %s", content);
-                    printf("\nsender: %s", username);
-
+                    // printf("\nprivate: %s", private);
+                    // printf("\ndestination: %s", destination);
+                    // printf("\ncontent: %s", content);
+                    // printf("\nsender: %s", username);
+                    printf("\n\n[%s] --> [%s]: %s\n",username, "TODOS", content);
                     //Enviar al servidor UserOption
 
                     printf("\n\n");
@@ -283,17 +373,20 @@ int main(int argc, char **argv) {
             case 2:
                 // Private message
                 {
-                    // // Chat with others
-                    // char private[] = "1"; // Public message indicator
-                    // char destination[BUFFER_SIZE];
-                    // char content[BUFFER_SIZE];
+                    // Chat with others
+                    char private[] = "1"; // Public message indicator
+                    char destination[BUFFER_SIZE];
+                    char content[BUFFER_SIZE];
 
-                    // // ingresar los datos
-                    // printf("Ingresar destinatario: ");
-                    // scanf(" %[^\n]", destination);  // Leer hasta que se le agreguen datos
-                    // printf("Esriba el mensaje: ");
-                    // scanf(" %[^\n]", content); // Leer hasta que se le agreguen datos
-                    
+                    // ingresar los datos
+                    printf("Ingresar destinatario: ");
+                    scanf(" %[^\n]", destination);  // Leer hasta que se le agreguen datos
+                    printf("Esriba el mensaje: ");
+                    scanf(" %[^\n]", content); // Leer hasta que se le agreguen datos
+
+                    printf("\n\n[%s] --> [%s]: %s\n",username, destination, content); 
+                
+
                     // printf("\nprivate: %s", private);
                     // printf("\ndestination: %s", destination);
                     // printf("\ncontent: %s", content);
@@ -301,20 +394,32 @@ int main(int argc, char **argv) {
 
                     //Enviar al servidor UserOption
 
+                    printf("\n\n");
+
+                    //Mensaje Privado
+
+                    Chat__Message mensaje_directo   = CHAT__MESSAGE__INIT;
+                    mensaje_directo.message_private        = '1';
+                    mensaje_directo.message_destination    = destination;
+                    mensaje_directo.message_content        = content;
+                    mensaje_directo.message_sender         = username;
+
                     Chat__UserOption opcion_escogida    = CHAT__USER_OPTION__INIT;
                     opcion_escogida.op                  = choice;
+                    opcion_escogida.message             = &mensaje_directo;
 
                     // Serializando registro
                     size_t serialized_size_opc = chat__user_option__get_packed_size(&opcion_escogida);
                     uint8_t *buffer_opc = malloc(serialized_size_opc);
                     chat__user_option__pack(&opcion_escogida, buffer_opc);
-
+                    
                     // Enviar registro
                     if (send(client_socket, buffer_opc, serialized_size_opc, 0) < 0) {
                         perror("Error al enviar el mensaje");
                         exit(1);
                     }
                     free(buffer_opc);
+                    printf("\n\n");
 
                 }
                 break;
@@ -341,6 +446,7 @@ int main(int argc, char **argv) {
                             valid_input = 0; // Set valid_input to false
                         }
 
+
                     }
 
                     printf("\nstate: %i", state);
@@ -352,6 +458,27 @@ int main(int argc, char **argv) {
                 {
                     char connectedUsers = 0;
                 }
+
+                Chat__UserList lista_usuarios   = CHAT__USER_LIST__INIT;
+                lista_usuarios.list =   '1';
+
+                Chat__UserOption opcion_escogida    = CHAT__USER_OPTION__INIT;
+                opcion_escogida.op                  = choice;
+                opcion_escogida.userlist            = &lista_usuarios;
+
+                // Serializando registro
+                size_t serialized_size_opc = chat__user_option__get_packed_size(&opcion_escogida);
+                uint8_t *buffer_opc = malloc(serialized_size_opc);
+                chat__user_option__pack(&opcion_escogida, buffer_opc);
+                
+                // Enviar registro
+                if (send(client_socket, buffer_opc, serialized_size_opc, 0) < 0) {
+                    perror("Error al enviar el mensaje");
+                    exit(1);
+                }
+
+                free(buffer_opc);
+                printf("\n\n");
                 break;
             case 5:
                 // Show specific user information
@@ -373,6 +500,22 @@ int main(int argc, char **argv) {
                 break;
             case 7:
                 // Exit
+                printf("\n\n");
+                Chat__UserOption finalizar    = CHAT__USER_OPTION__INIT;
+                finalizar.op                  = choice;
+
+                // Serializando registro
+                size_t serialized_size_finalizar = chat__user_option__get_packed_size(&finalizar);
+                uint8_t *buffer_finalizar = malloc(serialized_size_finalizar);
+                chat__user_option__pack(&finalizar, buffer_finalizar);
+                
+                // Enviar registro
+                if (send(client_socket, buffer_finalizar, serialized_size_finalizar, 0) < 0) {
+                    perror("Error al enviar el mensaje");
+                    exit(1);
+                }
+                free(buffer_finalizar);
+                printf("\n\n");
                 printf("Exiting...");
                 break;
             default:

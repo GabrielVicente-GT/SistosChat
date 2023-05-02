@@ -14,6 +14,6 @@ gcc -o cliente cliente.c chat.pb-c.c -pthread -lprotobuf-c
 
 status
 
-0 -> ocupado
-1 -> inactivo
-2 -> activo
+1 -> ACTIVO
+2 -> OCUPADO
+3 -> INACTIVO
