@@ -226,6 +226,10 @@ void *handle_client(void *arg)
             {
                 if (strcmp(userList[i].username, MyInfo.username) == 0)
                 {
+                    // revisar si el usuario esta inactivo en este caso activarlo como activo
+                    if (userList[i].status == 3){
+                        userList[i].status = 1;
+                    }
                     // Si el usuario se llama Gabriel, omitirlo y continuar con el siguiente
                     userList[i].last_active = time(NULL);
                     continue;
@@ -265,6 +269,10 @@ void *handle_client(void *arg)
             {
                 if (strcmp(userList[i].username, mensaje_recibido_directo->message_destination) == 0)
                 {
+                    // revisar si el usuario esta inactivo en este caso activarlo como activo
+                    if (userList[i].status == 3){
+                        userList[i].status = 1;
+                    }
                     userList[i].last_active = time(NULL);
                     enviar_mensaje = 1;
                     indice_usuario = i;
@@ -328,6 +336,10 @@ void *handle_client(void *arg)
                 // Recorrer la lista de usuarios
                 for (int i = 0; i < numUsers; i++) {
                     if (strcmp(userList[i].username, MyInfo.username) == 0) {
+                        // revisar si el usuario esta inactivo en este caso activarlo como activo
+                        if (userList[i].status == 3){
+                            userList[i].status = 1;
+                        }
                         // Si el usuario se llama Gabriel, cambiar su estado
                         userList[i].last_active = time(NULL);
                         userList[i].status = estatus_recibido->user_state;
@@ -350,6 +362,10 @@ void *handle_client(void *arg)
             for (int i = 0; i < numUsers; i++)
             {
                 if (strcmp(userList[i].username, MyInfo.username) == 0) {
+                    // revisar si el usuario esta inactivo en este caso activarlo como activo
+                    if (userList[i].status == 3){
+                        userList[i].status = 1;
+                    }
                     userList[i].last_active = time(NULL);
                 }
                 Chat__User *new_user = malloc(sizeof(Chat__User));
@@ -394,6 +410,10 @@ void *handle_client(void *arg)
                 for (int i = 0; i < numUsers; i++)
                 {
                     if (strcmp(userList[i].username, MyInfo.username) == 0) {
+                        // revisar si el usuario esta inactivo en este caso activarlo como activo
+                        if (userList[i].status == 3){
+                            userList[i].status = 1;
+                        }
                         userList[i].last_active = time(NULL);
                     }
                     Chat__User *new_user = malloc(sizeof(Chat__User));
@@ -445,6 +465,10 @@ void *handle_client(void *arg)
             // Lógica para manejar la opción 6
             for (int i = 0; i < numUsers; i++){
                 if (strcmp(userList[i].username, MyInfo.username) == 0) {
+                    // revisar si el usuario esta inactivo en este caso activarlo como activo
+                    if (userList[i].status == 3){
+                        userList[i].status = 1;
+                    }
                     userList[i].last_active = time(NULL);
                 }
             }
