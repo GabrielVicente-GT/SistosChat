@@ -115,16 +115,36 @@ void* client_listening(void *arg) {
                     Chat__User *usuario_leido = usuarios_conected->users[i];
                     char nombre_estado[40];
                     strcpy(nombre_estado, estado(usuario_leido->user_state));
-                    printf("%d",usuario_leido->user_state);
                     printf("\n >> [%s] -- [%s] -- [%s]\n\n", usuario_leido->user_name, usuario_leido->user_ip, nombre_estado);
-                }   
-                printf("Opción 4 seleccionada\n");
+                }
+
                 // Código para la opción 4
                 break;
             case 5:
-                printf("Opción 5 seleccionada\n");
+                {
+
+                if (response_servidor->response_status_code == 400)
+                {
+                    Chat__UsersOnline *usuarios_conected = response_servidor->users_online;
+                    for (int i = 0; i < usuarios_conected->n_users; i++){
+                        Chat__User *usuario_leido = usuarios_conected->users[i];
+                        if (strcmp("Vacio", usuario_leido->user_name) != 0)
+                        {
+                            printf("\n\n >> Informacion de usuario: %s <<\n", usuario_leido->user_name);
+                            char nombre_estado[40];
+                            strcpy(nombre_estado, estado(usuario_leido->user_state));
+                            printf("\n >> [%s] -- [%s] -- [%s]\n\n", usuario_leido->user_name, usuario_leido->user_ip, nombre_estado);
+                        }
+                        
+                        
+                    }
+                }else{
+                    printf("\n\n >> No se ha encontrado al usuario\n\n");
+                }
+
                 // Código para la opción 5
                 break;
+                }
             case 6:
                 printf("Opción 6 seleccionada\n");
                 // Código para la opción 6
@@ -510,7 +530,30 @@ int main(int argc, char **argv) {
                     scanf(" %[^\n]", UserInformation);  // Leer hasta que se le agreguen datos
                 
                     printf("UserInformation: %s", UserInformation);
+
+                    Chat__UserList lista_usuarios   = CHAT__USER_LIST__INIT;
+                    lista_usuarios.list =   '0';
+                    lista_usuarios.user_name = UserInformation;
+
+                    Chat__UserOption opcion_escogida    = CHAT__USER_OPTION__INIT;
+                    opcion_escogida.op                  = choice;
+                    opcion_escogida.userlist            = &lista_usuarios;
+
+                    // Serializando registro
+                    size_t serialized_size_opc = chat__user_option__get_packed_size(&opcion_escogida);
+                    uint8_t *buffer_opc = malloc(serialized_size_opc);
+                    chat__user_option__pack(&opcion_escogida, buffer_opc);
+                    
+                    // Enviar registro
+                    if (send(client_socket, buffer_opc, serialized_size_opc, 0) < 0) {
+                        perror("Error al enviar el mensaje");
+                        exit(1);
+                    }
+
+                    free(buffer_opc);
+                    printf("\n\n");
                 }
+                
                 break;
             case 6:
                 {

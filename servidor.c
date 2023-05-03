@@ -7,9 +7,9 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <pthread.h>
-
 #include "chat.pb-c.h"
 
+//Definiciones globales
 #define BACKLOG 10
 #define BUFFER_SIZE 1024
 
@@ -22,11 +22,12 @@ typedef struct
     time_t last_active;
 } User;
 
-#define MAX_USERS 50 // Define el tamaño máximo de la lista
+//Lista de usuarios conectados
+#define MAX_USERS 50
+User userList[MAX_USERS];
+int numUsers = 0;
 
-User userList[MAX_USERS]; // Crea un arreglo de estructuras de usuario con tamaño máximo de MAX_USERS
-int numUsers = 0;         // El número actual de usuarios en la lista, inicializado en 0
-
+//Devuelve si un usuario existe
 int userExists(char *username)
 {
     int i;
@@ -65,7 +66,7 @@ void removeUser(char *username, char *ip, int socketFD, int status)
     for (i = 0; i < numUsers; i++)
     {
         User user = userList[i];
-        if (strcmp(user.username, username) == 0 && strcmp(user.ip, ip) == 0 && user.socketFD == socketFD && user.status == status)
+        if (strcmp(user.username, username) == 0 && strcmp(user.ip, ip) == 0 && user.socketFD == socketFD)
         {
             // Encontró el usuario, lo elimina
             for (j = i; j < numUsers - 1; j++)
@@ -97,43 +98,7 @@ void* check_inactive_users(void *arg) {
     }
 }
 
-// void handle_client(int client_socket) {
-//     // Recibir un buffer del socket
-//     uint8_t recv_buffer[BUFFER_SIZE];
-//     ssize_t recv_size = recv(client_socket, recv_buffer, sizeof(recv_buffer), 0);
-//     if (recv_size < 0) {
-//         perror("Error al recibir el mensaje");
-//         exit(1);
-//     }
-
-//     // Deserializar el buffer en un mensaje Message
-//     Chat__Message *message = chat__message__unpack(NULL, recv_size, recv_buffer);
-
-//     printf("Mensaje recibido de %s: %s\n", message->message_sender, message-> message_content);
-
-//     // Crear una respuesta
-//     Chat__Message response          = CHAT__MESSAGE__INIT;
-//     response.message_private        = '0';
-//     response.message_destination    = "Cliente";
-//     response.message_content        = "Mensaje recibido correctamente";
-//     response.message_sender = message->message_sender;
-
-//     // Serializar la respuesta en un buffer
-//     size_t serialized_size = chat__message__get_packed_size(&response);
-//     uint8_t *buffer = malloc(serialized_size);
-//     chat__message__pack(&response, buffer);
-
-//     // Enviar el buffer de respuesta a través del socket
-//     if (send(client_socket, buffer, serialized_size, 0) < 0) {
-//         perror("Error al enviar la respuesta");
-//         exit(1);
-//     }
-
-//     // Liberar los buffers y el mensaje
-//     free(buffer);
-//     chat__message__free_unpacked(message, NULL);
-//     close(client_socket);
-// }
+//Funcion que maneja las respuestas al cliente
 void *handle_client(void *arg)
 {
     int client_socket = *(int *)arg;
@@ -166,19 +131,7 @@ void *handle_client(void *arg)
     strcpy(MyInfo.username, chat_registration->username);
     strcpy(MyInfo.ip, chat_registration->ip);
     MyInfo.socketFD = client_socket;
-    MyInfo.status = 1;
-    // printf("Nombre de usuario: %s\n", MyInfo.username);
-    // printf("Dirección IP: %s\n", MyInfo.ip);
-    // printf("Descriptor de archivo del socket: %d\n", MyInfo.socketFD);
-    // printf("Estado: %d\n", MyInfo.status);
 
-    // Respuesta del servidor
-
-    // Chat__Message response          = CHAT__MESSAGE__INIT;
-    // response.message_private        = '1';
-    // response.message_destination    = MyInfo.username;
-    // response.message_content        = "Fuiste registrado!";
-    // response.message_sender         = "Servidor";
 
     // Answer server
     Chat__Answer respuesta_servidor_registro = CHAT__ANSWER__INIT;
@@ -232,32 +185,9 @@ void *handle_client(void *arg)
         // removeUser(chat_registration->username,chat_registration->ip,client_socket, 0);
     }
 
-    // // Serializar la respuesta en un buffer
-    // size_t serialized_size = chat__message__get_packed_size(&response);
-    // uint8_t *buffer = malloc(serialized_size);
-    // chat__message__pack(&response, buffer);
-
-    // // Enviar el buffer de respuesta a través del socket
-    // if (send(client_socket, buffer, serialized_size, 0) < 0) {
-    //     perror("Error al enviar la respuesta");
-    //     exit(1);
-    // }
-
-    // Liberar los buffers y el mensaje
-    // free(buffer);
-    // Liberar los recursos utilizados por el mensaje y cerrar el socket del cliente
     chat__user_option__free_unpacked(usero_registration, NULL);
 
-    // printf("\n\n ---- Usuarios dentro del chat ----\n");
-
-    // for (int i = 0; i < numUsers; i++) {
-    //     printf("Información del usuario #%d:\n", i+1);
-    //     printf("Nombre de usuario: %s\n", userList[i].username);
-    //     printf("Dirección IP: %s\n", userList[i].ip);
-    //     printf("Descriptor de archivo del socket: %d\n", userList[i].socketFD);
-    //     printf("Estado: %d\n", userList[i].status);
-    //     printf("\n");
-    // }
+    //Escuchando useroptions recibidas
     printf("\n\n Entrando en el ciclo de opciones de [%s]\n", MyInfo.username);
     while (1)
     {
@@ -453,8 +383,64 @@ void *handle_client(void *arg)
             // Lógica para manejar la opción 4
             break;
         case 5:
-            // Lógica para manejar la opción 5
+            {
+                printf("\n\n");
+                int user_found = 0;
+                //Usuarios online
+                Chat__UsersOnline usuarios_conectados = CHAT__USERS_ONLINE__INIT;
+                usuarios_conectados.n_users = numUsers;
+                usuarios_conectados.users   = malloc(sizeof(Chat__User *) * numUsers);
+
+                for (int i = 0; i < numUsers; i++)
+                {
+                    if (strcmp(userList[i].username, MyInfo.username) == 0) {
+                        userList[i].last_active = time(NULL);
+                    }
+                    Chat__User *new_user = malloc(sizeof(Chat__User));
+                    chat__user__init(new_user);
+                    Chat__User *empty = malloc(sizeof(Chat__User));
+                    chat__user__init(empty);
+                    empty->user_name = "Vacio";
+                    new_user->user_name = userList[i].username;
+                    new_user->user_state = userList[i].status;
+                    new_user->user_ip = userList[i].ip;
+                    if(strcmp(userList[i].username, client_opcion->userlist->user_name) == 0){
+                        usuarios_conectados.users[i] = new_user;
+                        user_found = 1;
+                    }else{
+                        usuarios_conectados.users[i] = empty;
+                    }
+                    
+                }
+
+                // Answer del servidor
+                Chat__Answer respuesta_servidor = CHAT__ANSWER__INIT;
+                respuesta_servidor.op = 5;
+                if (user_found == 1)
+                {
+                    respuesta_servidor.response_status_code = 400;
+                }else{
+                    respuesta_servidor.response_status_code = 200;
+                }
+                
+
+                respuesta_servidor.response_message = "Lista de usuarios Conectados";
+                respuesta_servidor.users_online = &usuarios_conectados;
+
+                // Serializar la respuesta en un buffer
+                size_t serialized_size_servidor = chat__answer__get_packed_size(&respuesta_servidor);
+                uint8_t *buffer_servidor = malloc(serialized_size_servidor);
+                chat__answer__pack(&respuesta_servidor, buffer_servidor);
+
+                // Enviar el buffer de respuesta a través del socket
+                if (send(MyInfo.socketFD, buffer_servidor, serialized_size_servidor, 0) < 0)
+                {
+                    perror("Error al enviar la respuesta");
+                    exit(1);
+                }
+                free(buffer_servidor);
             break;
+            }
         case 6:
             // Lógica para manejar la opción 6
             for (int i = 0; i < numUsers; i++){
