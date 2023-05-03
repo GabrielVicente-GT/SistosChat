@@ -15,14 +15,14 @@ PROTOBUF_C__BEGIN_DECLS
 #endif
 
 
-typedef struct _Chat__UserList Chat__UserList;
-typedef struct _Chat__UsersOnline Chat__UsersOnline;
-typedef struct _Chat__UserOption Chat__UserOption;
-typedef struct _Chat__Answer Chat__Answer;
-typedef struct _Chat__User Chat__User;
-typedef struct _Chat__NewUser Chat__NewUser;
-typedef struct _Chat__Status Chat__Status;
-typedef struct _Chat__Message Chat__Message;
+typedef struct _ChatSistOS__UserList ChatSistOS__UserList;
+typedef struct _ChatSistOS__UsersOnline ChatSistOS__UsersOnline;
+typedef struct _ChatSistOS__UserOption ChatSistOS__UserOption;
+typedef struct _ChatSistOS__Answer ChatSistOS__Answer;
+typedef struct _ChatSistOS__User ChatSistOS__User;
+typedef struct _ChatSistOS__NewUser ChatSistOS__NewUser;
+typedef struct _ChatSistOS__Status ChatSistOS__Status;
+typedef struct _ChatSistOS__Message ChatSistOS__Message;
 
 
 /* --- enums --- */
@@ -30,7 +30,7 @@ typedef struct _Chat__Message Chat__Message;
 
 /* --- messages --- */
 
-struct  _Chat__UserList
+struct  _ChatSistOS__UserList
 {
   ProtobufCMessage base;
   /*
@@ -43,26 +43,26 @@ struct  _Chat__UserList
    */
   char *user_name;
 };
-#define CHAT__USER_LIST__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&chat__user_list__descriptor) \
+#define CHAT_SIST_OS__USER_LIST__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&chat_sist_os__user_list__descriptor) \
     , 0, (char *)protobuf_c_empty_string }
 
 
-struct  _Chat__UsersOnline
+struct  _ChatSistOS__UsersOnline
 {
   ProtobufCMessage base;
   /*
    * Lista de usuarios
    */
   size_t n_users;
-  Chat__User **users;
+  ChatSistOS__User **users;
 };
-#define CHAT__USERS_ONLINE__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&chat__users_online__descriptor) \
+#define CHAT_SIST_OS__USERS_ONLINE__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&chat_sist_os__users_online__descriptor) \
     , 0,NULL }
 
 
-struct  _Chat__UserOption
+struct  _ChatSistOS__UserOption
 {
   ProtobufCMessage base;
   /*
@@ -72,26 +72,26 @@ struct  _Chat__UserOption
   /*
    * crear nuevo usuario
    */
-  Chat__NewUser *createuser;
+  ChatSistOS__NewUser *createuser;
   /*
    * ver usuarios conectados/ver estado de usuario
    */
-  Chat__UserList *userlist;
+  ChatSistOS__UserList *userlist;
   /*
    * cambiar estado de usuario
    */
-  Chat__Status *status;
+  ChatSistOS__Status *status;
   /*
    * enviar mensaje
    */
-  Chat__Message *message;
+  ChatSistOS__Message *message;
 };
-#define CHAT__USER_OPTION__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&chat__user_option__descriptor) \
+#define CHAT_SIST_OS__USER_OPTION__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&chat_sist_os__user_option__descriptor) \
     , 0, NULL, NULL, NULL, NULL }
 
 
-struct  _Chat__Answer
+struct  _ChatSistOS__Answer
 {
   ProtobufCMessage base;
   /*
@@ -109,26 +109,26 @@ struct  _Chat__Answer
   /*
    * Lista de usuarios
    */
-  Chat__UsersOnline *users_online;
+  ChatSistOS__UsersOnline *users_online;
   /*
    * Mensaje recibido
    */
-  Chat__Message *message;
+  ChatSistOS__Message *message;
   /*
    * Usuario 
    */
-  Chat__User *user;
+  ChatSistOS__User *user;
   /*
    * Status del usuario
    */
-  Chat__Status *status;
+  ChatSistOS__Status *status;
 };
-#define CHAT__ANSWER__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&chat__answer__descriptor) \
+#define CHAT_SIST_OS__ANSWER__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&chat_sist_os__answer__descriptor) \
     , 0, 0, (char *)protobuf_c_empty_string, NULL, NULL, NULL, NULL }
 
 
-struct  _Chat__User
+struct  _ChatSistOS__User
 {
   ProtobufCMessage base;
   /*
@@ -144,12 +144,12 @@ struct  _Chat__User
    */
   int32_t user_state;
 };
-#define CHAT__USER__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&chat__user__descriptor) \
+#define CHAT_SIST_OS__USER__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&chat_sist_os__user__descriptor) \
     , (char *)protobuf_c_empty_string, (char *)protobuf_c_empty_string, 0 }
 
 
-struct  _Chat__NewUser
+struct  _ChatSistOS__NewUser
 {
   ProtobufCMessage base;
   /*
@@ -161,12 +161,12 @@ struct  _Chat__NewUser
    */
   char *ip;
 };
-#define CHAT__NEW_USER__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&chat__new_user__descriptor) \
+#define CHAT_SIST_OS__NEW_USER__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&chat_sist_os__new_user__descriptor) \
     , (char *)protobuf_c_empty_string, (char *)protobuf_c_empty_string }
 
 
-struct  _Chat__Status
+struct  _ChatSistOS__Status
 {
   ProtobufCMessage base;
   char *user_name;
@@ -175,12 +175,12 @@ struct  _Chat__Status
    */
   int32_t user_state;
 };
-#define CHAT__STATUS__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&chat__status__descriptor) \
+#define CHAT_SIST_OS__STATUS__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&chat_sist_os__status__descriptor) \
     , (char *)protobuf_c_empty_string, 0 }
 
 
-struct  _Chat__Message
+struct  _ChatSistOS__Message
 {
   ProtobufCMessage base;
   /*
@@ -200,188 +200,188 @@ struct  _Chat__Message
    */
   char *message_sender;
 };
-#define CHAT__MESSAGE__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&chat__message__descriptor) \
+#define CHAT_SIST_OS__MESSAGE__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&chat_sist_os__message__descriptor) \
     , 0, (char *)protobuf_c_empty_string, (char *)protobuf_c_empty_string, (char *)protobuf_c_empty_string }
 
 
-/* Chat__UserList methods */
-void   chat__user_list__init
-                     (Chat__UserList         *message);
-size_t chat__user_list__get_packed_size
-                     (const Chat__UserList   *message);
-size_t chat__user_list__pack
-                     (const Chat__UserList   *message,
+/* ChatSistOS__UserList methods */
+void   chat_sist_os__user_list__init
+                     (ChatSistOS__UserList         *message);
+size_t chat_sist_os__user_list__get_packed_size
+                     (const ChatSistOS__UserList   *message);
+size_t chat_sist_os__user_list__pack
+                     (const ChatSistOS__UserList   *message,
                       uint8_t             *out);
-size_t chat__user_list__pack_to_buffer
-                     (const Chat__UserList   *message,
+size_t chat_sist_os__user_list__pack_to_buffer
+                     (const ChatSistOS__UserList   *message,
                       ProtobufCBuffer     *buffer);
-Chat__UserList *
-       chat__user_list__unpack
+ChatSistOS__UserList *
+       chat_sist_os__user_list__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   chat__user_list__free_unpacked
-                     (Chat__UserList *message,
+void   chat_sist_os__user_list__free_unpacked
+                     (ChatSistOS__UserList *message,
                       ProtobufCAllocator *allocator);
-/* Chat__UsersOnline methods */
-void   chat__users_online__init
-                     (Chat__UsersOnline         *message);
-size_t chat__users_online__get_packed_size
-                     (const Chat__UsersOnline   *message);
-size_t chat__users_online__pack
-                     (const Chat__UsersOnline   *message,
+/* ChatSistOS__UsersOnline methods */
+void   chat_sist_os__users_online__init
+                     (ChatSistOS__UsersOnline         *message);
+size_t chat_sist_os__users_online__get_packed_size
+                     (const ChatSistOS__UsersOnline   *message);
+size_t chat_sist_os__users_online__pack
+                     (const ChatSistOS__UsersOnline   *message,
                       uint8_t             *out);
-size_t chat__users_online__pack_to_buffer
-                     (const Chat__UsersOnline   *message,
+size_t chat_sist_os__users_online__pack_to_buffer
+                     (const ChatSistOS__UsersOnline   *message,
                       ProtobufCBuffer     *buffer);
-Chat__UsersOnline *
-       chat__users_online__unpack
+ChatSistOS__UsersOnline *
+       chat_sist_os__users_online__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   chat__users_online__free_unpacked
-                     (Chat__UsersOnline *message,
+void   chat_sist_os__users_online__free_unpacked
+                     (ChatSistOS__UsersOnline *message,
                       ProtobufCAllocator *allocator);
-/* Chat__UserOption methods */
-void   chat__user_option__init
-                     (Chat__UserOption         *message);
-size_t chat__user_option__get_packed_size
-                     (const Chat__UserOption   *message);
-size_t chat__user_option__pack
-                     (const Chat__UserOption   *message,
+/* ChatSistOS__UserOption methods */
+void   chat_sist_os__user_option__init
+                     (ChatSistOS__UserOption         *message);
+size_t chat_sist_os__user_option__get_packed_size
+                     (const ChatSistOS__UserOption   *message);
+size_t chat_sist_os__user_option__pack
+                     (const ChatSistOS__UserOption   *message,
                       uint8_t             *out);
-size_t chat__user_option__pack_to_buffer
-                     (const Chat__UserOption   *message,
+size_t chat_sist_os__user_option__pack_to_buffer
+                     (const ChatSistOS__UserOption   *message,
                       ProtobufCBuffer     *buffer);
-Chat__UserOption *
-       chat__user_option__unpack
+ChatSistOS__UserOption *
+       chat_sist_os__user_option__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   chat__user_option__free_unpacked
-                     (Chat__UserOption *message,
+void   chat_sist_os__user_option__free_unpacked
+                     (ChatSistOS__UserOption *message,
                       ProtobufCAllocator *allocator);
-/* Chat__Answer methods */
-void   chat__answer__init
-                     (Chat__Answer         *message);
-size_t chat__answer__get_packed_size
-                     (const Chat__Answer   *message);
-size_t chat__answer__pack
-                     (const Chat__Answer   *message,
+/* ChatSistOS__Answer methods */
+void   chat_sist_os__answer__init
+                     (ChatSistOS__Answer         *message);
+size_t chat_sist_os__answer__get_packed_size
+                     (const ChatSistOS__Answer   *message);
+size_t chat_sist_os__answer__pack
+                     (const ChatSistOS__Answer   *message,
                       uint8_t             *out);
-size_t chat__answer__pack_to_buffer
-                     (const Chat__Answer   *message,
+size_t chat_sist_os__answer__pack_to_buffer
+                     (const ChatSistOS__Answer   *message,
                       ProtobufCBuffer     *buffer);
-Chat__Answer *
-       chat__answer__unpack
+ChatSistOS__Answer *
+       chat_sist_os__answer__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   chat__answer__free_unpacked
-                     (Chat__Answer *message,
+void   chat_sist_os__answer__free_unpacked
+                     (ChatSistOS__Answer *message,
                       ProtobufCAllocator *allocator);
-/* Chat__User methods */
-void   chat__user__init
-                     (Chat__User         *message);
-size_t chat__user__get_packed_size
-                     (const Chat__User   *message);
-size_t chat__user__pack
-                     (const Chat__User   *message,
+/* ChatSistOS__User methods */
+void   chat_sist_os__user__init
+                     (ChatSistOS__User         *message);
+size_t chat_sist_os__user__get_packed_size
+                     (const ChatSistOS__User   *message);
+size_t chat_sist_os__user__pack
+                     (const ChatSistOS__User   *message,
                       uint8_t             *out);
-size_t chat__user__pack_to_buffer
-                     (const Chat__User   *message,
+size_t chat_sist_os__user__pack_to_buffer
+                     (const ChatSistOS__User   *message,
                       ProtobufCBuffer     *buffer);
-Chat__User *
-       chat__user__unpack
+ChatSistOS__User *
+       chat_sist_os__user__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   chat__user__free_unpacked
-                     (Chat__User *message,
+void   chat_sist_os__user__free_unpacked
+                     (ChatSistOS__User *message,
                       ProtobufCAllocator *allocator);
-/* Chat__NewUser methods */
-void   chat__new_user__init
-                     (Chat__NewUser         *message);
-size_t chat__new_user__get_packed_size
-                     (const Chat__NewUser   *message);
-size_t chat__new_user__pack
-                     (const Chat__NewUser   *message,
+/* ChatSistOS__NewUser methods */
+void   chat_sist_os__new_user__init
+                     (ChatSistOS__NewUser         *message);
+size_t chat_sist_os__new_user__get_packed_size
+                     (const ChatSistOS__NewUser   *message);
+size_t chat_sist_os__new_user__pack
+                     (const ChatSistOS__NewUser   *message,
                       uint8_t             *out);
-size_t chat__new_user__pack_to_buffer
-                     (const Chat__NewUser   *message,
+size_t chat_sist_os__new_user__pack_to_buffer
+                     (const ChatSistOS__NewUser   *message,
                       ProtobufCBuffer     *buffer);
-Chat__NewUser *
-       chat__new_user__unpack
+ChatSistOS__NewUser *
+       chat_sist_os__new_user__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   chat__new_user__free_unpacked
-                     (Chat__NewUser *message,
+void   chat_sist_os__new_user__free_unpacked
+                     (ChatSistOS__NewUser *message,
                       ProtobufCAllocator *allocator);
-/* Chat__Status methods */
-void   chat__status__init
-                     (Chat__Status         *message);
-size_t chat__status__get_packed_size
-                     (const Chat__Status   *message);
-size_t chat__status__pack
-                     (const Chat__Status   *message,
+/* ChatSistOS__Status methods */
+void   chat_sist_os__status__init
+                     (ChatSistOS__Status         *message);
+size_t chat_sist_os__status__get_packed_size
+                     (const ChatSistOS__Status   *message);
+size_t chat_sist_os__status__pack
+                     (const ChatSistOS__Status   *message,
                       uint8_t             *out);
-size_t chat__status__pack_to_buffer
-                     (const Chat__Status   *message,
+size_t chat_sist_os__status__pack_to_buffer
+                     (const ChatSistOS__Status   *message,
                       ProtobufCBuffer     *buffer);
-Chat__Status *
-       chat__status__unpack
+ChatSistOS__Status *
+       chat_sist_os__status__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   chat__status__free_unpacked
-                     (Chat__Status *message,
+void   chat_sist_os__status__free_unpacked
+                     (ChatSistOS__Status *message,
                       ProtobufCAllocator *allocator);
-/* Chat__Message methods */
-void   chat__message__init
-                     (Chat__Message         *message);
-size_t chat__message__get_packed_size
-                     (const Chat__Message   *message);
-size_t chat__message__pack
-                     (const Chat__Message   *message,
+/* ChatSistOS__Message methods */
+void   chat_sist_os__message__init
+                     (ChatSistOS__Message         *message);
+size_t chat_sist_os__message__get_packed_size
+                     (const ChatSistOS__Message   *message);
+size_t chat_sist_os__message__pack
+                     (const ChatSistOS__Message   *message,
                       uint8_t             *out);
-size_t chat__message__pack_to_buffer
-                     (const Chat__Message   *message,
+size_t chat_sist_os__message__pack_to_buffer
+                     (const ChatSistOS__Message   *message,
                       ProtobufCBuffer     *buffer);
-Chat__Message *
-       chat__message__unpack
+ChatSistOS__Message *
+       chat_sist_os__message__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   chat__message__free_unpacked
-                     (Chat__Message *message,
+void   chat_sist_os__message__free_unpacked
+                     (ChatSistOS__Message *message,
                       ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
-typedef void (*Chat__UserList_Closure)
-                 (const Chat__UserList *message,
+typedef void (*ChatSistOS__UserList_Closure)
+                 (const ChatSistOS__UserList *message,
                   void *closure_data);
-typedef void (*Chat__UsersOnline_Closure)
-                 (const Chat__UsersOnline *message,
+typedef void (*ChatSistOS__UsersOnline_Closure)
+                 (const ChatSistOS__UsersOnline *message,
                   void *closure_data);
-typedef void (*Chat__UserOption_Closure)
-                 (const Chat__UserOption *message,
+typedef void (*ChatSistOS__UserOption_Closure)
+                 (const ChatSistOS__UserOption *message,
                   void *closure_data);
-typedef void (*Chat__Answer_Closure)
-                 (const Chat__Answer *message,
+typedef void (*ChatSistOS__Answer_Closure)
+                 (const ChatSistOS__Answer *message,
                   void *closure_data);
-typedef void (*Chat__User_Closure)
-                 (const Chat__User *message,
+typedef void (*ChatSistOS__User_Closure)
+                 (const ChatSistOS__User *message,
                   void *closure_data);
-typedef void (*Chat__NewUser_Closure)
-                 (const Chat__NewUser *message,
+typedef void (*ChatSistOS__NewUser_Closure)
+                 (const ChatSistOS__NewUser *message,
                   void *closure_data);
-typedef void (*Chat__Status_Closure)
-                 (const Chat__Status *message,
+typedef void (*ChatSistOS__Status_Closure)
+                 (const ChatSistOS__Status *message,
                   void *closure_data);
-typedef void (*Chat__Message_Closure)
-                 (const Chat__Message *message,
+typedef void (*ChatSistOS__Message_Closure)
+                 (const ChatSistOS__Message *message,
                   void *closure_data);
 
 /* --- services --- */
@@ -389,14 +389,14 @@ typedef void (*Chat__Message_Closure)
 
 /* --- descriptors --- */
 
-extern const ProtobufCMessageDescriptor chat__user_list__descriptor;
-extern const ProtobufCMessageDescriptor chat__users_online__descriptor;
-extern const ProtobufCMessageDescriptor chat__user_option__descriptor;
-extern const ProtobufCMessageDescriptor chat__answer__descriptor;
-extern const ProtobufCMessageDescriptor chat__user__descriptor;
-extern const ProtobufCMessageDescriptor chat__new_user__descriptor;
-extern const ProtobufCMessageDescriptor chat__status__descriptor;
-extern const ProtobufCMessageDescriptor chat__message__descriptor;
+extern const ProtobufCMessageDescriptor chat_sist_os__user_list__descriptor;
+extern const ProtobufCMessageDescriptor chat_sist_os__users_online__descriptor;
+extern const ProtobufCMessageDescriptor chat_sist_os__user_option__descriptor;
+extern const ProtobufCMessageDescriptor chat_sist_os__answer__descriptor;
+extern const ProtobufCMessageDescriptor chat_sist_os__user__descriptor;
+extern const ProtobufCMessageDescriptor chat_sist_os__new_user__descriptor;
+extern const ProtobufCMessageDescriptor chat_sist_os__status__descriptor;
+extern const ProtobufCMessageDescriptor chat_sist_os__message__descriptor;
 
 PROTOBUF_C__END_DECLS
 

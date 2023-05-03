@@ -114,14 +114,14 @@ void *handle_client(void *arg)
     }
 
     // Deserializar el registro de NewUser
-    Chat__UserOption *usero_registration = chat__user_option__unpack(NULL, recv_size, recv_buffer);
+    ChatSistOS__UserOption *usero_registration = chat_sist_os__user_option__unpack(NULL, recv_size, recv_buffer);
     if (usero_registration == NULL)
     {
         fprintf(stderr, "Error al deserializar el mensaje del cliente\n");
         exit(1);
     }
 
-    Chat__NewUser *chat_registration = usero_registration->createuser;
+    ChatSistOS__NewUser *chat_registration = usero_registration->createuser;
 
     printf("\n >> Nuevo usuario conectado!  >> Nombre: %s  >> IP: %s\n", chat_registration->username, chat_registration->ip);
     // printf("Mensaje recibido del cliente %d: %s\n", client_socket, chat_message->content);
@@ -134,7 +134,7 @@ void *handle_client(void *arg)
 
 
     // Answer server
-    Chat__Answer respuesta_servidor_registro = CHAT__ANSWER__INIT;
+    ChatSistOS__Answer respuesta_servidor_registro = CHAT_SIST_OS__ANSWER__INIT;
     if (userExists(MyInfo.username) == 0)
     {
         // Agregar usuario conectado a la lista de usuarios
@@ -146,9 +146,9 @@ void *handle_client(void *arg)
         // respuesta_servidor.message = &response;
 
         // Serializar la respuesta en un buffer
-        size_t serialized_size_servidor_registro = chat__answer__get_packed_size(&respuesta_servidor_registro);
+        size_t serialized_size_servidor_registro = chat_sist_os__answer__get_packed_size(&respuesta_servidor_registro);
         uint8_t *buffer_servidor_registro = malloc(serialized_size_servidor_registro);
-        chat__answer__pack(&respuesta_servidor_registro, buffer_servidor_registro);
+        chat_sist_os__answer__pack(&respuesta_servidor_registro, buffer_servidor_registro);
 
         // Enviar el buffer de respuesta a través del socket
         if (send(MyInfo.socketFD, buffer_servidor_registro, serialized_size_servidor_registro, 0) < 0)
@@ -162,16 +162,16 @@ void *handle_client(void *arg)
     }
     else
     {
-        // Chat__Answer respuesta_servidor_registro          = CHAT__ANSWER__INIT;
+        // ChatSistOS__Answer respuesta_servidor_registro          = CHAT_SIST_OS__ANSWER__INIT;
         respuesta_servidor_registro.op = 0;
         respuesta_servidor_registro.response_status_code = 200;
         respuesta_servidor_registro.response_message = "Este usuario ya existe! D:";
         // respuesta_servidor.message = &response;
 
         // Serializar la respuesta en un buffer
-        size_t serialized_size_servidor_registro = chat__answer__get_packed_size(&respuesta_servidor_registro);
+        size_t serialized_size_servidor_registro = chat_sist_os__answer__get_packed_size(&respuesta_servidor_registro);
         uint8_t *buffer_servidor_registro = malloc(serialized_size_servidor_registro);
-        chat__answer__pack(&respuesta_servidor_registro, buffer_servidor_registro);
+        chat_sist_os__answer__pack(&respuesta_servidor_registro, buffer_servidor_registro);
 
         // Enviar el buffer de respuesta a través del socket
         if (send(MyInfo.socketFD, buffer_servidor_registro, serialized_size_servidor_registro, 0) < 0)
@@ -185,7 +185,7 @@ void *handle_client(void *arg)
         // removeUser(chat_registration->username,chat_registration->ip,client_socket, 0);
     }
 
-    chat__user_option__free_unpacked(usero_registration, NULL);
+    chat_sist_os__user_option__free_unpacked(usero_registration, NULL);
 
     //Escuchando useroptions recibidas
     printf("\n\n Entrando en el ciclo de opciones de [%s]\n", MyInfo.username);
@@ -206,7 +206,7 @@ void *handle_client(void *arg)
             goto salir_del_ciclo;
         }
         // Deserializar la opcion elegida del cliente
-        Chat__UserOption *client_opcion = chat__user_option__unpack(NULL, recv_size_opcion, recv_buffer_opcion);
+        ChatSistOS__UserOption *client_opcion = chat_sist_os__user_option__unpack(NULL, recv_size_opcion, recv_buffer_opcion);
         if (client_opcion == NULL)
         {
             fprintf(stderr, "Error al deserializar el mensaje del cliente\n");
@@ -219,7 +219,7 @@ void *handle_client(void *arg)
         {
         case 1:
             printf("\n\n");
-            Chat__Message *mensaje_recibido = client_opcion->message;
+            ChatSistOS__Message *mensaje_recibido = client_opcion->message;
 
             // Recorrer la lista de usuarios
             for (int i = 0; i < numUsers; i++)
@@ -235,15 +235,15 @@ void *handle_client(void *arg)
                     continue;
                 }
 
-                Chat__Answer respuesta_servidor = CHAT__ANSWER__INIT;
+                ChatSistOS__Answer respuesta_servidor = CHAT_SIST_OS__ANSWER__INIT;
                 respuesta_servidor.op = 1;
                 respuesta_servidor.response_status_code = 400;
                 respuesta_servidor.message = mensaje_recibido;
 
                 // Serializar la respuesta en un buffer
-                size_t serialized_size_servidor = chat__answer__get_packed_size(&respuesta_servidor);
+                size_t serialized_size_servidor = chat_sist_os__answer__get_packed_size(&respuesta_servidor);
                 uint8_t *buffer_servidor = malloc(serialized_size_servidor);
-                chat__answer__pack(&respuesta_servidor, buffer_servidor);
+                chat_sist_os__answer__pack(&respuesta_servidor, buffer_servidor);
 
                 // Enviar el buffer de respuesta a través del socket
                 if (send(userList[i].socketFD, buffer_servidor, serialized_size_servidor, 0) < 0)
@@ -260,7 +260,7 @@ void *handle_client(void *arg)
         case 2:
 
             printf("\n\n");
-            Chat__Message *mensaje_recibido_directo = client_opcion->message;
+            ChatSistOS__Message *mensaje_recibido_directo = client_opcion->message;
 
             // Recorrer la lista de usuarios
             int enviar_mensaje = 0;
@@ -282,15 +282,15 @@ void *handle_client(void *arg)
             if (enviar_mensaje == 1)
             {
                 // Si el usuario se encuentra
-                Chat__Answer respuesta_servidor = CHAT__ANSWER__INIT;
+                ChatSistOS__Answer respuesta_servidor = CHAT_SIST_OS__ANSWER__INIT;
                 respuesta_servidor.op = 2;
                 respuesta_servidor.response_status_code = 400;
                 respuesta_servidor.message = mensaje_recibido_directo;
 
                 // Serializar la respuesta en un buffer
-                size_t serialized_size_servidor = chat__answer__get_packed_size(&respuesta_servidor);
+                size_t serialized_size_servidor = chat_sist_os__answer__get_packed_size(&respuesta_servidor);
                 uint8_t *buffer_servidor = malloc(serialized_size_servidor);
-                chat__answer__pack(&respuesta_servidor, buffer_servidor);
+                chat_sist_os__answer__pack(&respuesta_servidor, buffer_servidor);
 
                 // Enviar el buffer de respuesta a través del socket
                 if (send(userList[indice_usuario].socketFD, buffer_servidor, serialized_size_servidor, 0) < 0)
@@ -306,16 +306,16 @@ void *handle_client(void *arg)
             {
 
                 // Si el usuario no se encuentra
-                Chat__Answer respuesta_servidor = CHAT__ANSWER__INIT;
+                ChatSistOS__Answer respuesta_servidor = CHAT_SIST_OS__ANSWER__INIT;
                 respuesta_servidor.op = 2;
                 respuesta_servidor.response_status_code = 200;
                 respuesta_servidor.response_message = "USUARIO NO ENCONTRADO";
                 respuesta_servidor.message = mensaje_recibido_directo;
 
                 // Serializar la respuesta en un buffer
-                size_t serialized_size_servidor = chat__answer__get_packed_size(&respuesta_servidor);
+                size_t serialized_size_servidor = chat_sist_os__answer__get_packed_size(&respuesta_servidor);
                 uint8_t *buffer_servidor = malloc(serialized_size_servidor);
-                chat__answer__pack(&respuesta_servidor, buffer_servidor);
+                chat_sist_os__answer__pack(&respuesta_servidor, buffer_servidor);
 
                 // Enviar el buffer de respuesta a través del socket
                 if (send(MyInfo.socketFD, buffer_servidor, serialized_size_servidor, 0) < 0)
@@ -332,7 +332,7 @@ void *handle_client(void *arg)
         case 3:
             // Lógica para manejar la opción 3
                 printf("\n\n");
-                Chat__Status *estatus_recibido = client_opcion->status;
+                ChatSistOS__Status *estatus_recibido = client_opcion->status;
                 // Recorrer la lista de usuarios
                 for (int i = 0; i < numUsers; i++) {
                     if (strcmp(userList[i].username, MyInfo.username) == 0) {
@@ -344,7 +344,7 @@ void *handle_client(void *arg)
                         userList[i].last_active = time(NULL);
                         userList[i].status = estatus_recibido->user_state;
 
-                        Chat__Answer respuesta_servidor          = CHAT__ANSWER__INIT;
+                        ChatSistOS__Answer respuesta_servidor          = CHAT_SIST_OS__ANSWER__INIT;
                         respuesta_servidor.op   =   3 ;
                         respuesta_servidor.response_status_code = 400;
                         respuesta_servidor.response_message = "\nStatus changed succesfully";
@@ -355,9 +355,9 @@ void *handle_client(void *arg)
             printf("\n\n");
 
             //Usuarios online
-            Chat__UsersOnline usuarios_conectados = CHAT__USERS_ONLINE__INIT;
+            ChatSistOS__UsersOnline usuarios_conectados = CHAT_SIST_OS__USERS_ONLINE__INIT;
             usuarios_conectados.n_users = numUsers;
-            usuarios_conectados.users   = malloc(sizeof(Chat__User *) * numUsers);
+            usuarios_conectados.users   = malloc(sizeof(ChatSistOS__User *) * numUsers);
 
             for (int i = 0; i < numUsers; i++)
             {
@@ -368,8 +368,8 @@ void *handle_client(void *arg)
                     }
                     userList[i].last_active = time(NULL);
                 }
-                Chat__User *new_user = malloc(sizeof(Chat__User));
-                chat__user__init(new_user);
+                ChatSistOS__User *new_user = malloc(sizeof(ChatSistOS__User));
+                chat_sist_os__user__init(new_user);
                 new_user->user_name = userList[i].username;
                 new_user->user_state = userList[i].status;
                 new_user->user_ip = userList[i].ip;
@@ -378,16 +378,16 @@ void *handle_client(void *arg)
             }
 
             // Answer del servidor
-            Chat__Answer respuesta_servidor = CHAT__ANSWER__INIT;
+            ChatSistOS__Answer respuesta_servidor = CHAT_SIST_OS__ANSWER__INIT;
             respuesta_servidor.op = 4;
             respuesta_servidor.response_status_code = 400;
             respuesta_servidor.response_message = "Lista de usuarios Conectados";
             respuesta_servidor.users_online = &usuarios_conectados;
 
             // Serializar la respuesta en un buffer
-            size_t serialized_size_servidor = chat__answer__get_packed_size(&respuesta_servidor);
+            size_t serialized_size_servidor = chat_sist_os__answer__get_packed_size(&respuesta_servidor);
             uint8_t *buffer_servidor = malloc(serialized_size_servidor);
-            chat__answer__pack(&respuesta_servidor, buffer_servidor);
+            chat_sist_os__answer__pack(&respuesta_servidor, buffer_servidor);
 
             // Enviar el buffer de respuesta a través del socket
             if (send(MyInfo.socketFD, buffer_servidor, serialized_size_servidor, 0) < 0)
@@ -403,9 +403,9 @@ void *handle_client(void *arg)
                 printf("\n\n");
                 int user_found = 0;
                 //Usuarios online
-                Chat__UsersOnline usuarios_conectados = CHAT__USERS_ONLINE__INIT;
+                ChatSistOS__UsersOnline usuarios_conectados = CHAT_SIST_OS__USERS_ONLINE__INIT;
                 usuarios_conectados.n_users = numUsers;
-                usuarios_conectados.users   = malloc(sizeof(Chat__User *) * numUsers);
+                usuarios_conectados.users   = malloc(sizeof(ChatSistOS__User *) * numUsers);
 
                 for (int i = 0; i < numUsers; i++)
                 {
@@ -416,10 +416,10 @@ void *handle_client(void *arg)
                         }
                         userList[i].last_active = time(NULL);
                     }
-                    Chat__User *new_user = malloc(sizeof(Chat__User));
-                    chat__user__init(new_user);
-                    Chat__User *empty = malloc(sizeof(Chat__User));
-                    chat__user__init(empty);
+                    ChatSistOS__User *new_user = malloc(sizeof(ChatSistOS__User));
+                    chat_sist_os__user__init(new_user);
+                    ChatSistOS__User *empty = malloc(sizeof(ChatSistOS__User));
+                    chat_sist_os__user__init(empty);
                     empty->user_name = "Vacio";
                     new_user->user_name = userList[i].username;
                     new_user->user_state = userList[i].status;
@@ -434,7 +434,7 @@ void *handle_client(void *arg)
                 }
 
                 // Answer del servidor
-                Chat__Answer respuesta_servidor = CHAT__ANSWER__INIT;
+                ChatSistOS__Answer respuesta_servidor = CHAT_SIST_OS__ANSWER__INIT;
                 respuesta_servidor.op = 5;
                 if (user_found == 1)
                 {
@@ -448,9 +448,9 @@ void *handle_client(void *arg)
                 respuesta_servidor.users_online = &usuarios_conectados;
 
                 // Serializar la respuesta en un buffer
-                size_t serialized_size_servidor = chat__answer__get_packed_size(&respuesta_servidor);
+                size_t serialized_size_servidor = chat_sist_os__answer__get_packed_size(&respuesta_servidor);
                 uint8_t *buffer_servidor = malloc(serialized_size_servidor);
-                chat__answer__pack(&respuesta_servidor, buffer_servidor);
+                chat_sist_os__answer__pack(&respuesta_servidor, buffer_servidor);
 
                 // Enviar el buffer de respuesta a través del socket
                 if (send(MyInfo.socketFD, buffer_servidor, serialized_size_servidor, 0) < 0)
@@ -474,7 +474,7 @@ void *handle_client(void *arg)
             }
             break;
         case 7:
-            chat__user_option__free_unpacked(client_opcion, NULL);
+            chat_sist_os__user_option__free_unpacked(client_opcion, NULL);
             goto salir_del_ciclo;
         default:
             fprintf(stderr, "Opción no válida: %d\n", opcion_elegida);
@@ -482,7 +482,7 @@ void *handle_client(void *arg)
         }
 
         // Libera el desempaquetamiento
-        chat__user_option__free_unpacked(client_opcion, NULL);
+        chat_sist_os__user_option__free_unpacked(client_opcion, NULL);
     }
     salir_del_ciclo:
     removeUser(MyInfo.username, MyInfo.ip, MyInfo.socketFD, MyInfo.status);
