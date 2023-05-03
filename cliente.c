@@ -212,15 +212,15 @@ char *get_local_ip()
 int main(int argc, char **argv) {
     
     if (argc != 4) {
-        printf("Uso: %s <ip_servidor> <puerto_servidor> <usuario>\n", argv[0]);
+        printf("Uso: %s <usuario> <ip_servidor> <puerto_servidor> \n", argv[0]);
         exit(1);
     }
 
     signal(SIGINT, handle_sigint);
 
-    char *server_ip = argv[1];
-    int server_port = atoi(argv[2]);
-    char *username = argv[3];
+    char *server_ip = argv[2];
+    int server_port = atoi(argv[3]);
+    char *username = argv[1];
 
     /*Menu para el usuario*/
     int choice = 0;

@@ -10,7 +10,7 @@ gcc -o servidor servidor.c chat.pb-c.c -pthread -lprotobuf-c
 
 gcc -o cliente cliente.c chat.pb-c.c -pthread -lprotobuf-c
 
-./cliente 127.0.0.1 8080 usuario1
+./cliente usuario1 127.0.0.1 8080 
 
 status
 
