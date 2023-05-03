@@ -82,7 +82,7 @@ void* client_listening(void *arg) {
             case 1:
                 
                 printf("");
-                if (response_servidor->response_status_code == 400)
+                if (response_servidor->response_status_code == 200)
                 {
                     ChatSistOS__Message *mensaje_recibido = response_servidor->message;
                     printf("\n\n[%s] --> [%s]: %s\n",mensaje_recibido->message_sender, "TODOS", mensaje_recibido->message_content);
@@ -93,7 +93,7 @@ void* client_listening(void *arg) {
                 break;
             case 2:
                 printf("");
-                if (response_servidor->response_status_code == 400)
+                if (response_servidor->response_status_code == 200)
                 {
                     ChatSistOS__Message *mensaje_recibido = response_servidor->message;
                     printf("\n\n[%s] --> [%s]: %s\n",mensaje_recibido->message_sender, mensaje_recibido->message_destination, mensaje_recibido->message_content);
@@ -123,7 +123,7 @@ void* client_listening(void *arg) {
             case 5:
                 {
 
-                if (response_servidor->response_status_code == 400)
+                if (response_servidor->response_status_code == 200)
                 {
                     ChatSistOS__UsersOnline *usuarios_conected = response_servidor->users_online;
                     for (int i = 0; i < usuarios_conected->n_users; i++){
@@ -268,7 +268,7 @@ int main(int argc, char **argv) {
 
     free(buffer_registration);
 
-    // Serializando registro
+    // // Serializando registro
     // size_t serialized_size = chat_sist_os__new_user__get_packed_size(&registration);
     // uint8_t *buffer = malloc(serialized_size);
     // chat_sist_os__new_user__pack(&registration, buffer);
@@ -295,7 +295,7 @@ int main(int argc, char **argv) {
     // Deserializar el buffer en un mensaje Message
     ChatSistOS__Answer *response = chat_sist_os__answer__unpack(NULL, recv_size, recv_buffer);
 
-    if(response->response_status_code == 400){
+    if(response->response_status_code == 200){
         printf("\n\n[%s] --> [%s]: %s\n","Servidor", username, response->response_message);
                 
     }else{
@@ -598,6 +598,7 @@ int main(int argc, char **argv) {
                 printf("Exiting...");
                 break;
             default:
+                choice=1;
                 printf("Invalid choice. Please try again.\n");
                 break;
         }

@@ -141,7 +141,7 @@ void *handle_client(void *arg)
         addUser(chat_registration->username, chat_registration->ip, client_socket, 1);
 
         respuesta_servidor_registro.op = 0;
-        respuesta_servidor_registro.response_status_code = 400;
+        respuesta_servidor_registro.response_status_code = 200;
         respuesta_servidor_registro.response_message = "Fuiste Registrado! :D";
         // respuesta_servidor.message = &response;
 
@@ -164,7 +164,7 @@ void *handle_client(void *arg)
     {
         // ChatSistOS__Answer respuesta_servidor_registro          = CHAT_SIST_OS__ANSWER__INIT;
         respuesta_servidor_registro.op = 0;
-        respuesta_servidor_registro.response_status_code = 200;
+        respuesta_servidor_registro.response_status_code = 400;
         respuesta_servidor_registro.response_message = "Este usuario ya existe! D:";
         // respuesta_servidor.message = &response;
 
@@ -237,7 +237,7 @@ void *handle_client(void *arg)
 
                 ChatSistOS__Answer respuesta_servidor = CHAT_SIST_OS__ANSWER__INIT;
                 respuesta_servidor.op = 1;
-                respuesta_servidor.response_status_code = 400;
+                respuesta_servidor.response_status_code = 200;
                 respuesta_servidor.message = mensaje_recibido;
 
                 // Serializar la respuesta en un buffer
@@ -284,7 +284,7 @@ void *handle_client(void *arg)
                 // Si el usuario se encuentra
                 ChatSistOS__Answer respuesta_servidor = CHAT_SIST_OS__ANSWER__INIT;
                 respuesta_servidor.op = 2;
-                respuesta_servidor.response_status_code = 400;
+                respuesta_servidor.response_status_code = 200;
                 respuesta_servidor.message = mensaje_recibido_directo;
 
                 // Serializar la respuesta en un buffer
@@ -308,7 +308,7 @@ void *handle_client(void *arg)
                 // Si el usuario no se encuentra
                 ChatSistOS__Answer respuesta_servidor = CHAT_SIST_OS__ANSWER__INIT;
                 respuesta_servidor.op = 2;
-                respuesta_servidor.response_status_code = 200;
+                respuesta_servidor.response_status_code = 400;
                 respuesta_servidor.response_message = "USUARIO NO ENCONTRADO";
                 respuesta_servidor.message = mensaje_recibido_directo;
 
@@ -346,7 +346,7 @@ void *handle_client(void *arg)
 
                         ChatSistOS__Answer respuesta_servidor          = CHAT_SIST_OS__ANSWER__INIT;
                         respuesta_servidor.op   =   3 ;
-                        respuesta_servidor.response_status_code = 400;
+                        respuesta_servidor.response_status_code = 200;
                         respuesta_servidor.response_message = "\nStatus changed succesfully";
                     }
                 }
@@ -380,7 +380,7 @@ void *handle_client(void *arg)
             // Answer del servidor
             ChatSistOS__Answer respuesta_servidor = CHAT_SIST_OS__ANSWER__INIT;
             respuesta_servidor.op = 4;
-            respuesta_servidor.response_status_code = 400;
+            respuesta_servidor.response_status_code = 200;
             respuesta_servidor.response_message = "Lista de usuarios Conectados";
             respuesta_servidor.users_online = &usuarios_conectados;
 
@@ -438,9 +438,9 @@ void *handle_client(void *arg)
                 respuesta_servidor.op = 5;
                 if (user_found == 1)
                 {
-                    respuesta_servidor.response_status_code = 400;
-                }else{
                     respuesta_servidor.response_status_code = 200;
+                }else{
+                    respuesta_servidor.response_status_code = 400;
                 }
                 
 
